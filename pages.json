@@ -3,13 +3,13 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "房间管理系统"
+				"navigationBarTitleText": "统计信息"
 			}
 		},
 		{
 			"path": "pages/room-list/room-list",
 			"style": {
-				"navigationBarTitleText": "房间列表",
+				"navigationBarTitleText": "房间管理",
 				"enablePullDownRefresh": true
 			}
 		},
@@ -42,6 +42,24 @@
 			"style": {
 				"navigationBarTitleText": "系统测试"
 			}
+		},
+		{
+			"path": "pages/rental-renewal/rental-renewal",
+			"style": {
+				"navigationBarTitleText": "租赁续租"
+			}
+		},
+		{
+			"path": "pages/maintenance-record/maintenance-record",
+			"style": {
+				"navigationBarTitleText": "维修记录"
+			}
+		},
+		{
+			"path": "pages/system-deploy/system-deploy",
+			"style": {
+				"navigationBarTitleText": "系统部署管理"
+			}
 		}
 	],
 	"globalStyle": {
@@ -55,14 +73,15 @@
 		"selectedColor": "#007AFF",
 		"borderStyle": "black",
 		"backgroundColor": "#ffffff",
+		"fontSize": "16px",
 		"list": [
-			{
-				"pagePath": "pages/index/index",
-				"text": "首页"
-			},
 			{
 				"pagePath": "pages/room-list/room-list",
 				"text": "房间管理"
+			},
+			{
+				"pagePath": "pages/index/index",
+				"text": "统计信息"
 			}
 		]
 	},

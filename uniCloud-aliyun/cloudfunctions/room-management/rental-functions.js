@@ -47,14 +47,6 @@ async function addTenant(data) {
     return { code: -1, message: '该身份证号已存在' };
   }
   
-  // 检查手机号是否重复
-  const existPhone = await tenantsCollection.where({
-    phone: data.phone
-  }).get();
-  
-  if (existPhone.data.length > 0) {
-    return { code: -1, message: '该手机号已存在' };
-  }
   
   const tenantData = {
     ...data,
@@ -162,11 +154,7 @@ async function createRental(data) {
     update_date: new Date()
   });
   
-  // 更新房间的初始水电读数
-  await roomsCollection.doc(room_id).update({
-    'utilities.electricity_reading': electricity_start_reading || 0,
-    'utilities.water_reading': water_start_reading || 0
-  });
+  // 水电读数已经记录在租赁记录中，不需要在房间中单独存储
   
   return { code: 0, data: { rental_id: rentalResult.id } };
 }
@@ -292,6 +280,161 @@ async function getRentalInfo(data) {
   return { code: 0, data: rentalInfo };
 }
 
+// 续租功能
+async function renewRental(data) {
+  const { 
+    rental_id, 
+    new_rent_end_date, 
+    new_rent_price, 
+    electricity_reading, 
+    water_reading,
+    contract_notes 
+  } = data;
+  
+  // 获取当前租赁信息
+  const currentRental = await rentalsCollection.doc(rental_id).get();
+  if (currentRental.data.length === 0) {
+    return { code: -1, message: '租赁关系不存在' };
+  }
+  
+  const rentalInfo = currentRental.data[0];
+  
+  // 检查租赁是否为活跃状态
+  if (rentalInfo.status !== 'active') {
+    return { code: -1, message: '只有活跃的租赁关系才能续租' };
+  }
+  
+  // 获取房间信息
+  const room = await roomsCollection.doc(rentalInfo.room_id).get();
+  if (room.data.length === 0) {
+    return { code: -1, message: '房间不存在' };
+  }
+  
+  const roomInfo = room.data[0];
+  
+  try {
+    // 结束当前租赁
+    await rentalsCollection.doc(rental_id).update({
+      status: 'completed',
+      actual_end_date: new Date(),
+      update_date: new Date()
+    });
+    
+    // 创建新的续租记录
+    const renewalData = {
+      room_id: rentalInfo.room_id,
+      tenant_id: rentalInfo.tenant_id,
+      rent_price: new_rent_price || rentalInfo.rent_price,
+      deposit: rentalInfo.deposit, // 续租时通常不需要重新交押金
+      rent_start_date: new Date(), // 续租开始日期为当前日期
+      rent_end_date: new Date(new_rent_end_date),
+      status: 'active',
+      utilities_included: rentalInfo.utilities_included,
+      electricity_start_reading: electricity_reading || 0,
+      water_start_reading: water_reading || 0,
+      contract_notes: contract_notes || `续租合同 - 原租赁ID: ${rental_id}`,
+      is_renewal: true,
+      previous_rental_id: rental_id,
+      renewal_date: new Date(),
+      electricity_renewal_reading: electricity_reading || 0,
+      water_renewal_reading: water_reading || 0,
+      create_date: new Date(),
+      update_date: new Date()
+    };
+    
+    const newRentalResult = await rentalsCollection.add(renewalData);
+    
+    // 更新房间的当前租赁ID
+    await roomsCollection.doc(rentalInfo.room_id).update({
+      current_rental_id: newRentalResult.id,
+      update_date: new Date()
+    });
+    
+    return { 
+      code: 0, 
+      message: '续租成功',
+      data: { 
+        new_rental_id: newRentalResult.id,
+        previous_rental_id: rental_id
+      }
+    };
+    
+  } catch (error) {
+    console.error('续租失败:', error);
+    return { code: -1, message: '续租操作失败: ' + error.message };
+  }
+}
+
+// 获取房间的租赁历史
+async function getRentalHistory(data) {
+  const { room_id, roomId } = data;
+  const targetRoomId = roomId || room_id; // 支持两种参数名
+  
+  if (!targetRoomId) {
+    return { code: -1, message: '房间ID不能为空' };
+  }
+  
+  const rentals = await rentalsCollection
+    .where({ room_id: targetRoomId })
+    .orderBy('create_date', 'desc')
+    .get();
+  
+  // 获取租户信息
+  const rentalsWithTenant = await Promise.all(rentals.data.map(async (rental) => {
+    const tenant = await tenantsCollection.doc(rental.tenant_id).get();
+    if (tenant.data.length > 0) {
+      rental.tenant_info = tenant.data[0];
+    }
+    return rental;
+  }));
+  
+  return {
+    code: 0,
+    data: rentalsWithTenant
+  };
+}
+
+// 检查即将到期的租赁
+async function getExpiringRentals(data) {
+  const { days_ahead = 30 } = data || {};
+  
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + days_ahead);
+  
+  const expiringRentals = await rentalsCollection
+    .where({
+      status: 'active',
+      rent_end_date: db.command.lte(futureDate)
+    })
+    .orderBy('rent_end_date', 'asc')
+    .get();
+  
+  // 获取房间和租户信息
+  const rentalsWithInfo = await Promise.all(expiringRentals.data.map(async (rental) => {
+    // 获取房间信息
+    const room = await roomsCollection.doc(rental.room_id).get();
+    if (room.data.length > 0) {
+      rental.room_info = room.data[0];
+    }
+    
+    // 获取租户信息
+    const tenant = await tenantsCollection.doc(rental.tenant_id).get();
+    if (tenant.data.length > 0) {
+      rental.tenant_info = tenant.data[0];
+    }
+    
+    return rental;
+  }));
+  
+  return {
+    code: 0,
+    data: {
+      list: rentalsWithInfo,
+      total: rentalsWithInfo.length
+    }
+  };
+}
+
 module.exports = {
   getTenants,
   addTenant,
@@ -301,5 +444,8 @@ module.exports = {
   getRentals,
   getRentalsByRoom,
   terminateRental,
-  getRentalInfo
+  getRentalInfo,
+  renewRental,
+  getRentalHistory,
+  getExpiringRentals
 };

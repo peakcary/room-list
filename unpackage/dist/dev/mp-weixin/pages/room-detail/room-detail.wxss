@@ -81,16 +81,10 @@
   font-size: 28rpx;
   color: white;
 }
-.edit {
-  background-color: #1890ff;
-}
-.utilities {
-  background-color: #52c41a;
-}
 .tenant {
   background-color: #722ed1;
 }
-.tenant-remove {
+.delete {
   background-color: #ff4d4f;
 }
 .loading {
@@ -99,4 +93,260 @@
   align-items: center;
   height: 400rpx;
   color: #999;
+}
+
+/* 维修记录样式 */
+.section-title-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+.add-maintenance-btn {
+  padding: 12rpx 20rpx;
+  background-color: #52c41a;
+  color: white;
+  border: none;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+}
+.maintenance-list {
+  max-height: 400rpx;
+  overflow-y: auto;
+}
+.maintenance-item {
+  background-color: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+  border-left: 4rpx solid #fa8c16;
+}
+.maintenance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+.maintenance-amount {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #fa8c16;
+}
+.maintenance-date {
+  font-size: 24rpx;
+  color: #999;
+}
+.maintenance-content {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.4;
+}
+.no-maintenance {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 出租历史记录样式 */
+.rental-history-list {
+  max-height: 600rpx;
+  overflow-y: auto;
+}
+.rental-history-item {
+  background: linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%);
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  border-left: 4rpx solid #1890ff;
+  box-shadow: 0 2rpx 8rpx rgba(24, 144, 255, 0.1);
+}
+.rental-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.rental-tenant-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #1890ff;
+}
+.rental-status {
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: bold;
+  color: white;
+}
+.rental-status-active {
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+}
+.rental-status-terminated {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+}
+.rental-status-expired {
+  background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%);
+}
+.rental-details {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 8rpx;
+  padding: 16rpx;
+}
+.rental-period {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+.period-label {
+  font-size: 26rpx;
+  color: #666;
+  margin-right: 8rpx;
+}
+.period-value {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+.rental-info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+.rental-info-item {
+  display: flex;
+  align-items: center;
+}
+.rental-info-item .info-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-right: 8rpx;
+}
+.rental-info-item .info-value {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+.rental-info-item .info-value.price {
+  color: #ff4d4f;
+  font-weight: bold;
+}
+.rental-phone {
+  display: flex;
+  align-items: center;
+}
+.phone-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-right: 8rpx;
+}
+.phone-value {
+  font-size: 26rpx;
+  color: #1890ff;
+  text-decoration: underline;
+}
+.no-rental-history {
+  text-align: center;
+  padding: 60rpx 0;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 弹窗样式 */
+.maintenance-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 999;
+}
+.maintenance-popup {
+  background-color: white;
+  border-radius: 20rpx 20rpx 0 0;
+  width: 100%;
+  max-height: 80vh;
+  animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp {
+from {
+    transform: translateY(100%);
+}
+to {
+    transform: translateY(0);
+}
+}
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx 40rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.popup-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+.close-btn {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  color: #999;
+  border: none;
+  font-size: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.popup-content {
+  padding: 40rpx;
+}
+.form-item {
+  margin-bottom: 30rpx;
+}
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 20rpx;
+  border: 2rpx solid #e8e8e8;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  background-color: #fff;
+}
+.form-textarea {
+  min-height: 120rpx;
+  resize: none;
+}
+.form-input:focus, .form-textarea:focus {
+  border-color: #007AFF;
+}
+.popup-actions {
+  display: flex;
+  gap: 20rpx;
+  padding: 40rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+.btn-cancel, .btn-save {
+  flex: 1;
+  padding: 28rpx;
+  border: none;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+}
+.btn-cancel {
+  background-color: #f5f5f5;
+  color: #666;
+}
+.btn-save {
+  background-color: #007AFF;
+  color: white;
 }

@@ -11,7 +11,11 @@ const _sfc_main = {
         id_card: "",
         phone: "",
         rent_start_date: "",
-        rent_end_date: ""
+        rent_end_date: "",
+        rent_price: "",
+        deposit: "",
+        electricity_reading: "0",
+        water_reading: "0"
       }
     };
   },
@@ -59,7 +63,7 @@ const _sfc_main = {
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/tenant-info/tenant-info.vue:164", "加载房间信息失败:", error);
+        common_vendor.index.__f__("error", "at pages/tenant-info/tenant-info.vue:216", "加载房间信息失败:", error);
         common_vendor.index.showToast({
           title: "加载失败",
           icon: "none"
@@ -116,13 +120,6 @@ const _sfc_main = {
         });
         return false;
       }
-      if (!/^1[3-9]\d{9}$/.test(this.formData.phone)) {
-        common_vendor.index.showToast({
-          title: "请输入有效的手机号",
-          icon: "none"
-        });
-        return false;
-      }
       if (!this.formData.rent_start_date) {
         common_vendor.index.showToast({
           title: "请选择租期开始日期",
@@ -137,9 +134,9 @@ const _sfc_main = {
         });
         return false;
       }
-      if (new Date(this.formData.rent_start_date) >= new Date(this.formData.rent_end_date)) {
+      if (!this.formData.rent_price || this.formData.rent_price <= 0) {
         common_vendor.index.showToast({
-          title: "结束日期必须晚于开始日期",
+          title: "请输入有效的月租金",
           icon: "none"
         });
         return false;
@@ -154,39 +151,75 @@ const _sfc_main = {
         title: "保存中..."
       });
       try {
-        const tenantInfo = {
+        const tenantData = {
           name: this.formData.name.trim(),
           id_card: this.formData.id_card.trim(),
           phone: this.formData.phone.trim(),
-          rent_start_date: new Date(this.formData.rent_start_date).getTime(),
-          rent_end_date: new Date(this.formData.rent_end_date).getTime()
+          status: "active"
         };
-        const result = await common_vendor.tr.callFunction({
+        const tenantResult = await common_vendor.tr.callFunction({
           name: "room-management",
           data: {
-            action: "updateTenant",
-            data: {
-              roomId: this.roomId,
-              tenantInfo
-            }
+            action: "addTenant",
+            data: tenantData
           }
         });
-        if (result.result.code === 0) {
+        if (tenantResult.result.code !== 0) {
           common_vendor.index.showToast({
-            title: "保存成功",
+            title: tenantResult.result.message,
+            icon: "none"
+          });
+          return;
+        }
+        const tenantId = tenantResult.result.data.id;
+        const rentalData = {
+          room_id: this.roomId,
+          tenant_id: tenantId,
+          rent_price: parseFloat(this.formData.rent_price),
+          deposit: parseFloat(this.formData.deposit) || parseFloat(this.formData.rent_price),
+          // 押金默认等于租金
+          rent_start_date: this.formData.rent_start_date,
+          rent_end_date: this.formData.rent_end_date,
+          utilities_included: false,
+          electricity_start_reading: parseFloat(this.formData.electricity_reading) || 0,
+          water_start_reading: parseFloat(this.formData.water_reading) || 0,
+          contract_notes: `${this.roomInfo.room_number}号房租赁合同`
+        };
+        const rentalResult = await common_vendor.tr.callFunction({
+          name: "room-management",
+          data: {
+            action: "createRental",
+            data: rentalData
+          }
+        });
+        if (rentalResult.result.code === 0) {
+          common_vendor.index.showToast({
+            title: "租赁创建成功",
             icon: "success"
           });
           setTimeout(() => {
+            const pages = getCurrentPages();
+            const prevPage = pages[pages.length - 2];
+            if (prevPage && prevPage.route.includes("room-list")) {
+              prevPage.$vm.refreshData();
+            }
             common_vendor.index.navigateBack();
           }, 1500);
         } else {
+          await common_vendor.tr.callFunction({
+            name: "room-management",
+            data: {
+              action: "deleteTenant",
+              data: { id: tenantId }
+            }
+          });
           common_vendor.index.showToast({
-            title: result.result.message,
+            title: rentalResult.result.message,
             icon: "none"
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/tenant-info/tenant-info.vue:310", "保存租户信息失败:", error);
+        common_vendor.index.__f__("error", "at pages/tenant-info/tenant-info.vue:397", "保存租户信息失败:", error);
         common_vendor.index.showToast({
           title: "保存失败",
           icon: "none"
@@ -217,19 +250,27 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     k: common_vendor.t($data.formData.rent_end_date || "请选择结束日期"),
     l: $data.formData.rent_end_date,
     m: common_vendor.o((...args) => $options.onEndDateChange && $options.onEndDateChange(...args)),
-    n: $data.roomInfo
-  }, $data.roomInfo ? common_vendor.e({
-    o: common_vendor.t($data.roomInfo.room_number),
-    p: common_vendor.t($data.roomInfo.rent_price),
-    q: $data.roomInfo.area
-  }, $data.roomInfo.area ? {
-    r: common_vendor.t($data.roomInfo.area)
-  } : {}) : {}, {
-    s: common_vendor.o((...args) => $options.cancel && $options.cancel(...args)),
-    t: common_vendor.o((...args) => $options.saveTenant && $options.saveTenant(...args)),
-    v: common_vendor.o((...args) => $options.saveTenant && $options.saveTenant(...args))
+    n: $data.formData.electricity_reading,
+    o: common_vendor.o(($event) => $data.formData.electricity_reading = $event.detail.value),
+    p: $data.formData.water_reading,
+    q: common_vendor.o(($event) => $data.formData.water_reading = $event.detail.value),
+    r: $data.roomInfo
+  }, $data.roomInfo ? {
+    s: $data.roomInfo.room_number
+  } : {}, {
+    t: $data.formData.rent_price,
+    v: common_vendor.o(common_vendor.m(($event) => $data.formData.rent_price = $event.detail.value, {
+      number: true
+    })),
+    w: $data.formData.deposit,
+    x: common_vendor.o(common_vendor.m(($event) => $data.formData.deposit = $event.detail.value, {
+      number: true
+    })),
+    y: common_vendor.o((...args) => $options.cancel && $options.cancel(...args)),
+    z: common_vendor.o((...args) => $options.saveTenant && $options.saveTenant(...args)),
+    A: common_vendor.o((...args) => $options.saveTenant && $options.saveTenant(...args))
   }) : {}, {
-    w: $data.loading
+    B: $data.loading
   }, $data.loading ? {} : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

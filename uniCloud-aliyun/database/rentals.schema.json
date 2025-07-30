@@ -66,6 +66,29 @@
       "bsonType": "string",
       "description": "合同备注"
     },
+    "is_renewal": {
+      "bsonType": "bool",
+      "description": "是否为续租",
+      "default": false
+    },
+    "previous_rental_id": {
+      "bsonType": "string",
+      "description": "上一次租赁记录ID（续租时使用）"
+    },
+    "renewal_date": {
+      "bsonType": "timestamp",
+      "description": "续租日期"
+    },
+    "electricity_renewal_reading": {
+      "bsonType": "double",
+      "description": "续租时电表读数",
+      "default": 0
+    },
+    "water_renewal_reading": {
+      "bsonType": "double",
+      "description": "续租时水表读数",
+      "default": 0
+    },
     "create_date": {
       "bsonType": "timestamp",
       "description": "创建时间",

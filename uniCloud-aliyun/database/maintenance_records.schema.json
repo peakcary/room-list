@@ -1,0 +1,97 @@
+{
+  "bsonType": "object",
+  "description": "维修记录表",
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": true
+  },
+  "properties": {
+    "_id": {
+      "description": "维修记录ID"
+    },
+    "room_id": {
+      "bsonType": "string",
+      "description": "房间ID",
+      "required": true
+    },
+    "maintenance_date": {
+      "bsonType": "timestamp",
+      "description": "维修日期",
+      "required": true
+    },
+    "maintenance_type": {
+      "bsonType": "string",
+      "enum": ["plumbing", "electrical", "appliance", "furniture", "decoration", "other"],
+      "description": "维修类型: plumbing-水管, electrical-电路, appliance-电器, furniture-家具, decoration-装修, other-其他",
+      "required": true
+    },
+    "description": {
+      "bsonType": "string",
+      "description": "维修描述",
+      "required": true
+    },
+    "cost": {
+      "bsonType": "double",
+      "description": "维修费用(元)",
+      "required": true
+    },
+    "maintenance_company": {
+      "bsonType": "string",
+      "description": "维修公司/人员"
+    },
+    "contact_phone": {
+      "bsonType": "string",
+      "description": "联系电话"
+    },
+    "before_photos": {
+      "bsonType": "array", 
+      "description": "维修前照片",
+      "items": {
+        "bsonType": "string"
+      }
+    },
+    "after_photos": {
+      "bsonType": "array",
+      "description": "维修后照片", 
+      "items": {
+        "bsonType": "string"
+      }
+    },
+    "warranty_period": {
+      "bsonType": "int",
+      "description": "保修期(天)",
+      "default": 0
+    },
+    "warranty_end_date": {
+      "bsonType": "timestamp",
+      "description": "保修到期日期"
+    },
+    "status": {
+      "bsonType": "string",
+      "enum": ["pending", "in_progress", "completed", "warranty_expired"],
+      "description": "维修状态: pending-待维修, in_progress-维修中, completed-已完成, warranty_expired-保修过期",
+      "default": "pending"
+    },
+    "notes": {
+      "bsonType": "string",
+      "description": "备注"
+    },
+    "create_date": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    },
+    "update_date": {
+      "bsonType": "timestamp",
+      "description": "更新时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "required": ["room_id", "maintenance_date", "maintenance_type", "description", "cost"]
+}

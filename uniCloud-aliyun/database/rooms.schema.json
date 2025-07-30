@@ -29,6 +29,11 @@
       "description": "租金(元/月)",
       "required": true
     },
+    "deposit_amount": {
+      "bsonType": "double",
+      "description": "押金金额(元)",
+      "default": 0
+    },
     "status": {
       "bsonType": "string",
       "enum": ["available", "rented", "maintenance"],
@@ -38,32 +43,6 @@
     "current_rental_id": {
       "bsonType": "string",
       "description": "当前租赁关系ID（房间被租时关联租赁表）"
-    },
-    "utilities": {
-      "bsonType": "object",
-      "description": "水电信息",
-      "properties": {
-        "electricity_reading": {
-          "bsonType": "double",
-          "description": "电表读数",
-          "default": 0
-        },
-        "water_reading": {
-          "bsonType": "double",
-          "description": "水表读数", 
-          "default": 0
-        },
-        "electricity_rate": {
-          "bsonType": "double",
-          "description": "电费单价(元/度)",
-          "default": 0.5
-        },
-        "water_rate": {
-          "bsonType": "double",
-          "description": "水费单价(元/吨)",
-          "default": 3.0
-        }
-      }
     },
     "create_date": {
       "bsonType": "timestamp",

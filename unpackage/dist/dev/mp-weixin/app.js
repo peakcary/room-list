@@ -9,6 +9,9 @@ if (!Math) {
   "./pages/tenant-info/tenant-info.js";
   "./pages/utility-record/utility-record.js";
   "./pages/test/test.js";
+  "./pages/rental-renewal/rental-renewal.js";
+  "./pages/maintenance-record/maintenance-record.js";
+  "./pages/system-deploy/system-deploy.js";
 }
 const _sfc_main = {
   onLaunch: function() {

@@ -61,23 +61,71 @@
           </picker>
         </view>
       </view>
+      
+      <!-- 水电表读数 -->
+      <view class="form-section">
+        <view class="section-title">⚡ 入住水电表读数</view>
+        <view class="section-note">请记录入住时的水电表读数，用于后续计费</view>
+        
+        <view class="utility-grid">
+          <view class="utility-item">
+            <text class="utility-label">电表读数</text>
+            <view class="utility-input-group">
+              <input 
+                class="utility-input" 
+                v-model="formData.electricity_reading" 
+                type="digit"
+                placeholder="0"
+              />
+              <text class="utility-unit">度</text>
+            </view>
+          </view>
+          <view class="utility-item">
+            <text class="utility-label">水表读数</text>
+            <view class="utility-input-group">
+              <input 
+                class="utility-input" 
+                v-model="formData.water_reading" 
+                type="digit"
+                placeholder="0"
+              />
+              <text class="utility-unit">吨</text>
+            </view>
+          </view>
+        </view>
+      </view>
 
-      <!-- 房间信息显示 -->
-      <view class="form-section" v-if="roomInfo">
-        <view class="section-title">房间信息</view>
-        <view class="room-info">
-          <view class="info-item">
-            <text class="info-label">房间号:</text>
-            <text class="info-value">{{ roomInfo.room_number }}</text>
-          </view>
-          <view class="info-item">
-            <text class="info-label">租金:</text>
-            <text class="info-value price">¥{{ roomInfo.rent_price }}/月</text>
-          </view>
-          <view class="info-item" v-if="roomInfo.area">
-            <text class="info-label">面积:</text>
-            <text class="info-value">{{ roomInfo.area }}㎡</text>
-          </view>
+      <!-- 租赁信息 -->
+      <view class="form-section">
+        <view class="section-title">💰 租赁信息</view>
+        
+        <view class="form-item" v-if="roomInfo">
+          <view class="form-label">房间号</view>
+          <input 
+            class="form-input"
+            :value="roomInfo.room_number"
+            disabled
+          />
+        </view>
+        
+        <view class="form-item">
+          <view class="form-label">月租金 *</view>
+          <input 
+            class="form-input"
+            v-model.number="formData.rent_price"
+            type="digit"
+            placeholder="请输入月租金"
+          />
+        </view>
+        
+        <view class="form-item">
+          <view class="form-label">押金</view>
+          <input 
+            class="form-input"
+            v-model.number="formData.deposit"
+            type="digit"
+            placeholder="请输入押金金额"
+          />
         </view>
       </view>
 
@@ -107,7 +155,11 @@ export default {
         id_card: '',
         phone: '',
         rent_start_date: '',
-        rent_end_date: ''
+        rent_end_date: '',
+        rent_price: '',
+        deposit: '',
+        electricity_reading: '0',
+        water_reading: '0'
       }
     }
   },
@@ -226,14 +278,6 @@ export default {
         return false;
       }
       
-      // 简单的手机号验证
-      if (!/^1[3-9]\d{9}$/.test(this.formData.phone)) {
-        uni.showToast({
-          title: '请输入有效的手机号',
-          icon: 'none'
-        });
-        return false;
-      }
       
       if (!this.formData.rent_start_date) {
         uni.showToast({
@@ -251,10 +295,9 @@ export default {
         return false;
       }
       
-      // 验证日期逻辑
-      if (new Date(this.formData.rent_start_date) >= new Date(this.formData.rent_end_date)) {
+      if (!this.formData.rent_price || this.formData.rent_price <= 0) {
         uni.showToast({
-          title: '结束日期必须晚于开始日期',
+          title: '请输入有效的月租金',
           icon: 'none'
         });
         return false;
@@ -272,37 +315,81 @@ export default {
       });
       
       try {
-        const tenantInfo = {
+        // 先创建租户
+        const tenantData = {
           name: this.formData.name.trim(),
           id_card: this.formData.id_card.trim(),
           phone: this.formData.phone.trim(),
-          rent_start_date: new Date(this.formData.rent_start_date).getTime(),
-          rent_end_date: new Date(this.formData.rent_end_date).getTime()
+          status: 'active'
         };
         
-        const result = await uniCloud.callFunction({
+        const tenantResult = await uniCloud.callFunction({
           name: 'room-management',
           data: {
-            action: 'updateTenant',
-            data: {
-              roomId: this.roomId,
-              tenantInfo
-            }
+            action: 'addTenant',
+            data: tenantData
           }
         });
         
-        if (result.result.code === 0) {
+        if (tenantResult.result.code !== 0) {
           uni.showToast({
-            title: '保存成功',
+            title: tenantResult.result.message,
+            icon: 'none'
+          });
+          return;
+        }
+        
+        const tenantId = tenantResult.result.data.id;
+        
+        // 创建租赁关系
+        const rentalData = {
+          room_id: this.roomId,
+          tenant_id: tenantId,
+          rent_price: parseFloat(this.formData.rent_price),
+          deposit: parseFloat(this.formData.deposit) || parseFloat(this.formData.rent_price), // 押金默认等于租金
+          rent_start_date: this.formData.rent_start_date,
+          rent_end_date: this.formData.rent_end_date,
+          utilities_included: false,
+          electricity_start_reading: parseFloat(this.formData.electricity_reading) || 0,
+          water_start_reading: parseFloat(this.formData.water_reading) || 0,
+          contract_notes: `${this.roomInfo.room_number}号房租赁合同`
+        };
+        
+        const rentalResult = await uniCloud.callFunction({
+          name: 'room-management',
+          data: {
+            action: 'createRental',
+            data: rentalData
+          }
+        });
+        
+        if (rentalResult.result.code === 0) {
+          uni.showToast({
+            title: '租赁创建成功',
             icon: 'success'
           });
           
           setTimeout(() => {
+            // 通知页面刷新
+            const pages = getCurrentPages();
+            const prevPage = pages[pages.length - 2];
+            if (prevPage && prevPage.route.includes('room-list')) {
+              prevPage.$vm.refreshData();
+            }
             uni.navigateBack();
           }, 1500);
         } else {
+          // 如果租赁创建失败，删除已创建的租户
+          await uniCloud.callFunction({
+            name: 'room-management',
+            data: {
+              action: 'deleteTenant',
+              data: { id: tenantId }
+            }
+          });
+          
           uni.showToast({
-            title: result.result.message,
+            title: rentalResult.result.message,
             icon: 'none'
           });
         }
@@ -389,6 +476,59 @@ export default {
 .arrow {
   color: #999;
   font-size: 24rpx;
+}
+
+.section-note {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 20rpx;
+  line-height: 1.4;
+}
+
+.utility-grid {
+  display: flex;
+  gap: 24rpx;
+}
+
+.utility-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 20rpx;
+}
+
+.utility-label {
+  font-size: 26rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+.utility-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.utility-input {
+  flex: 1;
+  padding: 16rpx 40rpx 16rpx 16rpx;
+  border: 2rpx solid #e9ecef;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  text-align: center;
+  background-color: white;
+}
+
+.utility-unit {
+  position: absolute;
+  right: 12rpx;
+  font-size: 24rpx;
+  color: #999;
 }
 
 .room-info {

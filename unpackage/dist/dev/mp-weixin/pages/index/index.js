@@ -3,174 +3,225 @@ const common_vendor = require("../../common/vendor.js");
 const _sfc_main = {
   data() {
     return {
-      statistics: {
+      currentTimeType: "monthly",
+      // monthly 或 yearly
+      currentYear: (/* @__PURE__ */ new Date()).getFullYear(),
+      currentMonth: (/* @__PURE__ */ new Date()).getMonth() + 1,
+      incomeStats: {
+        rent_income: 0,
+        utility_income: 0,
+        maintenance_expenses: 0,
+        net_income: 0,
+        period: ""
+      },
+      occupancyStats: {
         total: 0,
         rented: 0,
         available: 0,
-        monthlyRevenue: 0
+        maintenance: 0,
+        occupancy_rate: 0
       },
-      recentActivities: []
+      rentalAlerts: {
+        expiring_soon: 0,
+        overdue: 0
+      },
+      incomeTrend: [],
+      loading: false
     };
   },
+  computed: {
+    currentPeriodText() {
+      if (this.currentTimeType === "monthly") {
+        return `${this.currentYear}年${this.currentMonth}月`;
+      } else {
+        return `${this.currentYear}年`;
+      }
+    }
+  },
   onLoad() {
-    this.loadStatistics();
-    this.loadRecentActivities();
+    this.loadDashboardData();
   },
   onShow() {
-    this.loadStatistics();
+    this.loadDashboardData();
   },
   methods: {
-    // 加载统计数据
-    async loadStatistics() {
+    // 加载首页数据
+    async loadDashboardData() {
+      if (this.loading)
+        return;
+      this.loading = true;
       try {
-        const promises = [
-          this.getRoomCount(""),
-          this.getRoomCount("rented"),
-          this.getRoomCount("available")
-        ];
-        const results = await Promise.all(promises);
-        this.statistics.total = results[0];
-        this.statistics.rented = results[1];
-        this.statistics.available = results[2];
-        await this.calculateMonthlyRevenue();
+        await this.loadIncomeStats();
+        await this.loadOccupancyStats();
+        await this.loadIncomeTrend();
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:132", "加载统计数据失败:", error);
-      }
-    },
-    // 获取房间数量
-    async getRoomCount(status) {
-      try {
-        const result = await common_vendor.tr.callFunction({
-          name: "room-management",
-          data: {
-            action: "getRooms",
-            data: {
-              status,
-              pageSize: 1e3,
-              // 获取所有数据来计算总数
-              pageNum: 1
-            }
-          }
+        common_vendor.index.__f__("error", "at pages/index/index.vue:214", "加载首页数据失败:", error);
+        common_vendor.index.showToast({
+          title: "数据加载失败",
+          icon: "none"
         });
-        return result.result.code === 0 ? result.result.data.total : 0;
-      } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:153", "获取房间数量失败:", error);
-        return 0;
+      } finally {
+        this.loading = false;
       }
     },
-    // 计算月收入
-    async calculateMonthlyRevenue() {
+    // 加载收入统计
+    async loadIncomeStats() {
       try {
         const result = await common_vendor.tr.callFunction({
           name: "room-management",
           data: {
-            action: "getRooms",
+            action: "getIncomeStatistics",
             data: {
-              status: "rented",
-              pageSize: 1e3,
-              pageNum: 1
+              year: this.currentYear,
+              month: this.currentTimeType === "monthly" ? this.currentMonth : void 0,
+              type: this.currentTimeType
             }
           }
         });
         if (result.result.code === 0) {
-          const rentedRooms = result.result.data.list;
-          const totalRevenue = rentedRooms.reduce((sum, room) => {
-            return sum + (room.rent_price || 0);
-          }, 0);
-          this.statistics.monthlyRevenue = totalRevenue;
+          if (this.currentTimeType === "yearly" && result.result.data.year_totals) {
+            this.incomeStats = result.result.data.year_totals;
+            this.incomeStats.period = result.result.data.period;
+          } else {
+            this.incomeStats = result.result.data;
+          }
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:182", "计算月收入失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:248", "加载收入统计失败:", error);
       }
     },
-    // 加载最近活动
-    loadRecentActivities() {
-      this.recentActivities = [
-        {
-          id: 1,
-          icon: "🏠",
-          title: "新增了101号房间",
-          time: new Date(Date.now() - 2 * 60 * 60 * 1e3)
-          // 2小时前
+    // 加载房间出租统计
+    async loadOccupancyStats() {
+      try {
+        const result = await common_vendor.tr.callFunction({
+          name: "room-management",
+          data: {
+            action: "getRoomOccupancyStatistics"
+          }
+        });
+        if (result.result.code === 0) {
+          this.occupancyStats = result.result.data.room_status;
+          this.rentalAlerts = result.result.data.rental_activity;
         }
-      ];
-    },
-    // 导航到房间列表
-    navigateToRooms(status) {
-      common_vendor.index.switchTab({
-        url: "/pages/room-list/room-list"
-      });
-    },
-    // 添加房间
-    addRoom() {
-      common_vendor.index.navigateTo({
-        url: "/pages/room-edit/room-edit"
-      });
-    },
-    // 查看房间列表
-    viewRooms() {
-      common_vendor.index.switchTab({
-        url: "/pages/room-list/room-list"
-      });
-    },
-    // 水电管理
-    utilityRecords() {
-      common_vendor.index.navigateTo({
-        url: "/pages/utility-record/utility-record"
-      });
-    },
-    // 租户管理
-    tenantManagement() {
-      common_vendor.index.navigateTo({
-        url: "/pages/tenant-info/tenant-info"
-      });
-    },
-    // 系统测试
-    systemTest() {
-      common_vendor.index.navigateTo({
-        url: "/pages/test/test"
-      });
-    },
-    // 格式化时间
-    formatTime(time) {
-      const now = /* @__PURE__ */ new Date();
-      const diff = now - time;
-      const hours = Math.floor(diff / (1e3 * 60 * 60));
-      if (hours < 1) {
-        return "刚刚";
-      } else if (hours < 24) {
-        return `${hours}小时前`;
-      } else {
-        const days = Math.floor(hours / 24);
-        return `${days}天前`;
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/index/index.vue:267", "加载房间统计失败:", error);
       }
+    },
+    // 加载收入趋势
+    async loadIncomeTrend() {
+      try {
+        const result = await common_vendor.tr.callFunction({
+          name: "room-management",
+          data: {
+            action: "getIncomeTrend"
+          }
+        });
+        if (result.result.code === 0) {
+          this.incomeTrend = result.result.data;
+        }
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/index/index.vue:285", "加载收入趋势失败:", error);
+      }
+    },
+    // 切换时间类型
+    switchTimeType(type) {
+      if (this.currentTimeType === type)
+        return;
+      this.currentTimeType = type;
+      this.loadIncomeStats();
+    },
+    // 显示时间选择器
+    showTimePicker() {
+      if (this.currentTimeType === "monthly") {
+        const months = [];
+        for (let i = 1; i <= 12; i++) {
+          months.push(`${i}月`);
+        }
+        common_vendor.index.showActionSheet({
+          itemList: months,
+          success: (res) => {
+            this.currentMonth = res.tapIndex + 1;
+            this.loadIncomeStats();
+          }
+        });
+      } else {
+        const currentYear = (/* @__PURE__ */ new Date()).getFullYear();
+        const years = [];
+        for (let i = currentYear - 2; i <= currentYear + 1; i++) {
+          years.push(`${i}年`);
+        }
+        common_vendor.index.showActionSheet({
+          itemList: years,
+          success: (res) => {
+            this.currentYear = currentYear - 2 + res.tapIndex;
+            this.loadIncomeStats();
+          }
+        });
+      }
+    },
+    // 计算趋势图柱状高度
+    getTrendBarHeight(amount) {
+      if (this.incomeTrend.length === 0)
+        return 0;
+      const maxAmount = Math.max(...this.incomeTrend.map(
+        (item) => item.rent_income + item.utility_income
+      ));
+      return maxAmount > 0 ? amount / maxAmount * 100 : 0;
+    },
+    // 格式化趋势月份
+    formatTrendMonth(monthStr) {
+      const [year, month] = monthStr.split("-");
+      return `${month}月`;
+    },
+    // 跳转到系统部署管理
+    goToSystemDeploy() {
+      common_vendor.index.navigateTo({
+        url: "/pages/system-deploy/system-deploy"
+      });
     }
   }
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.t($data.statistics.total),
-    b: common_vendor.o(($event) => $options.navigateToRooms("")),
-    c: common_vendor.t($data.statistics.rented),
-    d: common_vendor.o(($event) => $options.navigateToRooms("rented")),
-    e: common_vendor.t($data.statistics.available),
-    f: common_vendor.o(($event) => $options.navigateToRooms("available")),
-    g: common_vendor.t($data.statistics.monthlyRevenue),
-    h: common_vendor.o((...args) => $options.addRoom && $options.addRoom(...args)),
-    i: common_vendor.o((...args) => $options.viewRooms && $options.viewRooms(...args)),
-    j: common_vendor.o((...args) => $options.utilityRecords && $options.utilityRecords(...args)),
-    k: common_vendor.o((...args) => $options.tenantManagement && $options.tenantManagement(...args)),
-    l: common_vendor.o((...args) => $options.systemTest && $options.systemTest(...args)),
-    m: common_vendor.f($data.recentActivities, (activity, k0, i0) => {
+    a: $data.currentTimeType === "monthly" ? 1 : "",
+    b: common_vendor.o(($event) => $options.switchTimeType("monthly")),
+    c: $data.currentTimeType === "yearly" ? 1 : "",
+    d: common_vendor.o(($event) => $options.switchTimeType("yearly")),
+    e: common_vendor.t($options.currentPeriodText),
+    f: common_vendor.o((...args) => $options.showTimePicker && $options.showTimePicker(...args)),
+    g: common_vendor.t($data.incomeStats.rent_income || 0),
+    h: common_vendor.t($data.incomeStats.utility_income || 0),
+    i: common_vendor.t($data.incomeStats.maintenance_expenses || 0),
+    j: common_vendor.t($data.incomeStats.net_income || 0),
+    k: common_vendor.t($data.occupancyStats.occupancy_rate || 0),
+    l: common_vendor.t($data.occupancyStats.total || 0),
+    m: common_vendor.t($data.occupancyStats.rented || 0),
+    n: common_vendor.t($data.occupancyStats.available || 0),
+    o: $data.rentalAlerts.expiring_soon > 0 || $data.rentalAlerts.overdue > 0
+  }, $data.rentalAlerts.expiring_soon > 0 || $data.rentalAlerts.overdue > 0 ? common_vendor.e({
+    p: $data.rentalAlerts.expiring_soon > 0
+  }, $data.rentalAlerts.expiring_soon > 0 ? {
+    q: common_vendor.t($data.rentalAlerts.expiring_soon)
+  } : {}, {
+    r: $data.rentalAlerts.overdue > 0
+  }, $data.rentalAlerts.overdue > 0 ? {
+    s: common_vendor.t($data.rentalAlerts.overdue)
+  } : {}) : {}, {
+    t: $data.incomeTrend.length > 0
+  }, $data.incomeTrend.length > 0 ? {
+    v: common_vendor.f($data.incomeTrend, (item, index, i0) => {
       return {
-        a: common_vendor.t(activity.icon),
-        b: common_vendor.t(activity.title),
-        c: common_vendor.t($options.formatTime(activity.time)),
-        d: activity.id
+        a: $options.getTrendBarHeight(item.rent_income) + "%",
+        b: $options.getTrendBarHeight(item.utility_income) + "%",
+        c: $options.getTrendBarHeight(item.rent_income) + "%",
+        d: common_vendor.t($options.formatTrendMonth(item.month)),
+        e: common_vendor.t(item.rent_income + item.utility_income),
+        f: index
       };
-    }),
-    n: $data.recentActivities.length === 0
-  }, $data.recentActivities.length === 0 ? {} : {});
+    })
+  } : {}, {
+    w: common_vendor.o((...args) => $options.goToSystemDeploy && $options.goToSystemDeploy(...args))
+  });
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
 wx.createPage(MiniProgramPage);

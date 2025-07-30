@@ -7,24 +7,30 @@
         :class="{ active: currentTab === 'all' }"
         @click="switchTab('all')"
       >
-        <text class="tab-text">全部</text>
-        <text class="tab-count">({{ statistics.total }})</text>
+        <view class="tab-content">
+          <text class="tab-text">全部</text>
+          <text class="tab-count">({{ statistics.total }})</text>
+        </view>
       </view>
       <view 
         class="tab-item" 
         :class="{ active: currentTab === 'available' }"
         @click="switchTab('available')"
       >
-        <text class="tab-text">可租用</text>
-        <text class="tab-count">({{ statistics.available }})</text>
+        <view class="tab-content">
+          <text class="tab-text">可租用</text>
+          <text class="tab-count">({{ statistics.available }})</text>
+        </view>
       </view>
       <view 
         class="tab-item" 
         :class="{ active: currentTab === 'rented' }"
         @click="switchTab('rented')"
       >
-        <text class="tab-text">已租用</text>
-        <text class="tab-count">({{ statistics.rented }})</text>
+        <view class="tab-content">
+          <text class="tab-text">已租用</text>
+          <text class="tab-count">({{ statistics.rented }})</text>
+        </view>
       </view>
     </view>
     
@@ -49,46 +55,38 @@
       <view class="room-item" v-for="room in roomList" :key="room._id" @click="viewRoom(room)">
         <view class="room-header">
           <view class="room-number">{{ room.room_number }}号房</view>
-          <view class="room-status" :class="'status-' + room.status">
-            {{ getStatusText(room.status) }}
+          <view class="header-actions">
+            <button class="header-btn tenant" @click.stop="createRental(room)" v-if="room.status === 'available'">
+              出租
+            </button>
+            <button class="header-btn renewal" @click.stop="renewRental(room)" v-if="room.status === 'rented'">
+              续租
+            </button>
+            <button class="header-btn terminate" @click.stop="terminateRental(room)" v-if="room.status === 'rented'">
+              退租
+            </button>
           </view>
         </view>
         
-        <view class="room-info">
-          <view class="info-item">
-            <text class="label">面积:</text>
-            <text class="value">{{ room.area || '--' }}㎡</text>
-          </view>
-          <view class="info-item">
-            <text class="label">租金:</text>
-            <text class="value price">¥{{ room.rent_price }}/月</text>
-          </view>
-        </view>
         
-        <view class="tenant-info" v-if="room.current_tenant">
-          <view class="info-item">
-            <text class="label">租户:</text>
-            <text class="value">{{ room.current_tenant.name }}</text>
+        <view class="tenant-info-card" v-if="room.current_tenant">
+          <view class="tenant-main-info">
+            <view class="tenant-name-phone">
+              <text class="tenant-name">{{ room.current_tenant.name }}</text>
+              <text class="tenant-phone" @tap="callTenant(room.current_tenant.phone)">
+                📞 {{ room.current_tenant.phone }}
+              </text>
+            </view>
+            <view class="tenant-status">
+              <text class="status-badge">在租</text>
+            </view>
           </view>
-          <view class="info-item">
-            <text class="label">电话:</text>
-            <text class="value">{{ room.current_tenant.phone }}</text>
+          <view class="rental-period" v-if="room.current_rental">
+            <text class="period-text">📅 {{ formatDateRange(room.current_rental.rent_start_date, room.current_rental.rent_end_date) }}</text>
+            <view class="days-remaining" :class="getDaysRemainingClass(room.current_rental.rent_end_date)">
+              <text class="days-text">{{ getDaysRemaining(room.current_rental.rent_end_date) }}</text>
+            </view>
           </view>
-          <view class="info-item" v-if="room.current_rental">
-            <text class="label">租期:</text>
-            <text class="value">{{ formatDateRange(room.current_rental.rent_start_date, room.current_rental.rent_end_date) }}</text>
-          </view>
-        </view>
-        
-        <view class="room-actions">
-          <button class="action-btn edit" @click.stop="editRoom(room)">编辑</button>
-          <button class="action-btn utilities" @click.stop="manageUtilities(room)">水电</button>
-          <button class="action-btn tenant" @click.stop="createRental(room)" v-if="room.status === 'available'">
-            出租
-          </button>
-          <button class="action-btn tenant-end" @click.stop="terminateRental(room)" v-if="room.status === 'rented'">
-            退租
-          </button>
         </view>
       </view>
       
@@ -98,21 +96,6 @@
       </view>
     </scroll-view>
 
-    <!-- 底部统计 -->
-    <view class="statistics">
-      <view class="stat-item">
-        <text class="stat-number">{{ statistics.total }}</text>
-        <text class="stat-label">总房间</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-number">{{ statistics.rented }}</text>
-        <text class="stat-label">已租</text>
-      </view>
-      <view class="stat-item">
-        <text class="stat-number">{{ statistics.available }}</text>
-        <text class="stat-label">空闲</text>
-      </view>
-    </view>
   </view>
 </template>
 
@@ -142,6 +125,11 @@ export default {
   },
   
   onPullDownRefresh() {
+    this.refreshData();
+  },
+  
+  onShow() {
+    // 页面显示时刷新数据，确保从其他页面返回时数据是最新的
     this.refreshData();
   },
   
@@ -252,15 +240,10 @@ export default {
       return result.result.code === 0 ? result.result.data.total : 0;
     },
     
-    // Tab切换
-    switchTab(tab) {
-      if (this.currentTab === tab) return;
-      this.currentTab = tab;
-      this.refreshData();
-    },
     
     // 搜索
-    onSearch() {
+    onSearch(e) {
+      this.searchKeyword = e.detail.value;
       // 防抖处理
       clearTimeout(this.searchTimer);
       this.searchTimer = setTimeout(() => {
@@ -281,6 +264,13 @@ export default {
       }
     },
     
+    // Tab切换
+    switchTab(tab) {
+      if (this.currentTab === tab) return;
+      this.currentTab = tab;
+      this.refreshData();
+    },
+    
     // 查看房间详情
     viewRoom(room) {
       uni.navigateTo({
@@ -288,12 +278,6 @@ export default {
       });
     },
     
-    // 编辑房间
-    editRoom(room) {
-      uni.navigateTo({
-        url: `/pages/room-edit/room-edit?id=${room._id}`
-      });
-    },
     
     // 添加房间
     addRoom() {
@@ -308,6 +292,7 @@ export default {
         url: `/pages/tenant-info/tenant-info?roomId=${room._id}&action=create`
       });
     },
+    
     
     // 终止租赁关系
     terminateRental(room) {
@@ -358,12 +343,6 @@ export default {
       });
     },
     
-    // 管理水电
-    manageUtilities(room) {
-      uni.navigateTo({
-        url: `/pages/utility-record/utility-record?roomId=${room._id}`
-      });
-    },
     
     // 获取状态文本
     getStatusText(status) {
@@ -390,6 +369,71 @@ export default {
       };
       
       return `${formatDate(start)} 至 ${formatDate(end)}`;
+    },
+    
+    // 计算剩余天数
+    getDaysRemaining(endDate) {
+      if (!endDate) return '';
+      
+      const end = new Date(endDate);
+      const now = new Date();
+      const diffTime = end - now;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) {
+        return '已过期';
+      } else if (diffDays === 0) {
+        return '今日到期';
+      } else if (diffDays <= 7) {
+        return `${diffDays}天后到期`;
+      } else if (diffDays <= 30) {
+        return `${diffDays}天后到期`;
+      } else {
+        return `${Math.floor(diffDays / 30)}个月后到期`;
+      }
+    },
+    
+    // 获取剩余天数样式类
+    getDaysRemainingClass(endDate) {
+      if (!endDate) return '';
+      
+      const end = new Date(endDate);
+      const now = new Date();
+      const diffTime = end - now;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays < 0) {
+        return 'expired';
+      } else if (diffDays <= 7) {
+        return 'urgent';
+      } else if (diffDays <= 30) {
+        return 'warning';
+      } else {
+        return 'normal';
+      }
+    },
+    
+    // 拨打电话
+    callTenant(phoneNumber) {
+      uni.makePhoneCall({
+        phoneNumber: phoneNumber,
+        fail: (err) => {
+          console.error('拨打电话失败:', err);
+          uni.showToast({
+            title: '拨打失败',
+            icon: 'none'
+          });
+        }
+      });
+    },
+    
+    // 续租
+    renewRental(room) {
+      if (!room.current_rental_id) return;
+      
+      uni.navigateTo({
+        url: `/pages/rental-renewal/rental-renewal?rentalId=${room.current_rental_id}&roomId=${room._id}`
+      });
     }
   }
 }
@@ -414,11 +458,17 @@ export default {
 .tab-item {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
   padding: 24rpx 12rpx;
   position: relative;
   min-width: 0; /* 防止文字溢出 */
+}
+
+.tab-content {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
 }
 
 .tab-item.active {
@@ -438,26 +488,27 @@ export default {
 }
 
 .tab-text {
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: bold;
-  margin-bottom: 8rpx;
 }
 
 .tab-count {
-  font-size: 22rpx;
+  font-size: 26rpx;
   color: #999;
+  opacity: 0.8;
 }
 
 .tab-item.active .tab-count {
   color: #007AFF;
 }
 
+
 /* 操作栏样式 */
 .action-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20rpx 32rpx;
+  padding: 20rpx;
   background-color: #fff;
   border-bottom: 1rpx solid #eee;
 }
@@ -493,110 +544,181 @@ export default {
 
 .room-list {
   flex: 1;
-  padding: 20rpx 32rpx;
+  padding: 20rpx 0;
+}
+
+.room-list .room-item {
+  margin:10rpx 0;
 }
 
 .room-item {
   background-color: #fff;
   border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+  padding: 24rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.08);
+  border: 1rpx solid #f0f0f0;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.room-item:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
 }
 
 .room-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 16rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #f5f5f5;
 }
 
 .room-number {
-  font-size: 36rpx;
+  font-size: 40rpx;
   font-weight: bold;
-  color: #333;
-}
-
-.room-status {
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
-  color: white;
-}
-
-.status-available {
-  background-color: #52c41a;
-}
-
-.status-rented {
-  background-color: #ff4d4f;
-}
-
-.status-maintenance {
-  background-color: #faad14;
-}
-
-.room-info, .tenant-info {
-  display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 20rpx;
-}
-
-.info-item {
+  color: #1a1a1a;
   display: flex;
   align-items: center;
-  width: 50%;
-  margin-bottom: 12rpx;
 }
 
-.label {
-  color: #999;
-  font-size: 28rpx;
+.room-number::before {
+  content: '🏠';
+  font-size: 32rpx;
   margin-right: 12rpx;
 }
 
-.value {
-  color: #333;
-  font-size: 28rpx;
-}
-
-.price {
-  color: #ff4d4f;
-  font-weight: bold;
-}
-
-.room-actions {
+.header-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 16rpx;
+  gap: 8rpx;
+  align-items: center;
 }
 
-.action-btn {
-  padding: 12rpx 24rpx;
-  border-radius: 8rpx;
-  font-size: 24rpx;
+.header-btn {
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 22rpx;
+  font-weight: 500;
   border: none;
+  color: white;
+  min-width: 60rpx;
+  text-align: center;
 }
 
-.edit {
-  background-color: #1890ff;
-  color: white;
+
+.header-btn.tenant {
+  background: linear-gradient(135deg, #722ed1 0%, #9254de 100%);
 }
 
-.utilities {
-  background-color: #52c41a;
-  color: white;
+.header-btn.renewal {
+  background: linear-gradient(135deg, #13c2c2 0%, #36cfc9 100%);
 }
 
-.tenant {
-  background-color: #722ed1;
-  color: white;
+.header-btn.terminate {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
 }
 
-.tenant-end {
-  background-color: #ff4d4f;
+
+/* 租户信息卡片 */
+.tenant-info-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-top: 12rpx;
   color: white;
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
 }
+
+.tenant-main-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.tenant-name-phone {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.tenant-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-right: 16rpx;
+}
+
+.tenant-phone {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tenant-status {
+  flex-shrink: 0;
+}
+
+.status-badge {
+  background-color: rgba(82, 196, 26, 0.2);
+  color: #52c41a;
+  padding: 6rpx 12rpx;
+  border-radius: 16rpx;
+  font-size: 22rpx;
+  font-weight: bold;
+  border: 1rpx solid rgba(82, 196, 26, 0.3);
+}
+
+.rental-period {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.period-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+  flex: 1;
+}
+
+.days-remaining {
+  display: flex;
+  justify-content: center;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  margin-top: 8rpx;
+}
+
+.days-remaining.normal {
+  background-color: rgba(82, 196, 26, 0.2);
+  border: 1rpx solid rgba(82, 196, 26, 0.3);
+}
+
+.days-remaining.warning {
+  background-color: rgba(250, 173, 20, 0.2);
+  border: 1rpx solid rgba(250, 173, 20, 0.3);
+}
+
+.days-remaining.urgent {
+  background-color: rgba(255, 77, 79, 0.2);
+  border: 1rpx solid rgba(255, 77, 79, 0.3);
+}
+
+.days-remaining.expired {
+  background-color: rgba(140, 140, 140, 0.2);
+  border: 1rpx solid rgba(140, 140, 140, 0.3);
+}
+
+.days-text {
+  font-size: 24rpx;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+
 
 .load-more {
   text-align: center;
@@ -605,29 +727,4 @@ export default {
   font-size: 28rpx;
 }
 
-.statistics {
-  display: flex;
-  background-color: #fff;
-  border-top: 1rpx solid #eee;
-}
-
-.stat-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 32rpx 0;
-}
-
-.stat-number {
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #007AFF;
-  margin-bottom: 8rpx;
-}
-
-.stat-label {
-  font-size: 24rpx;
-  color: #999;
-}
 </style>

@@ -6964,9 +6964,9 @@ function isConsoleWritable() {
   return isWritable;
 }
 function initRuntimeSocketService() {
-  const hosts = "127.0.0.1,192.168.2.23";
+  const hosts = "127.0.0.1,192.168.3.11";
   const port = "8090";
-  const id = "mp-weixin_W_J11N";
+  const id = "mp-weixin_jp8enb";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -7916,13 +7916,13 @@ const pages = [
   {
     path: "pages/index/index",
     style: {
-      navigationBarTitleText: "房间管理系统"
+      navigationBarTitleText: "统计信息"
     }
   },
   {
     path: "pages/room-list/room-list",
     style: {
-      navigationBarTitleText: "房间列表",
+      navigationBarTitleText: "房间管理",
       enablePullDownRefresh: true
     }
   },
@@ -7955,6 +7955,24 @@ const pages = [
     style: {
       navigationBarTitleText: "系统测试"
     }
+  },
+  {
+    path: "pages/rental-renewal/rental-renewal",
+    style: {
+      navigationBarTitleText: "租赁续租"
+    }
+  },
+  {
+    path: "pages/maintenance-record/maintenance-record",
+    style: {
+      navigationBarTitleText: "维修记录"
+    }
+  },
+  {
+    path: "pages/system-deploy/system-deploy",
+    style: {
+      navigationBarTitleText: "系统部署管理"
+    }
   }
 ];
 const globalStyle = {
@@ -7968,14 +7986,15 @@ const tabBar = {
   selectedColor: "#007AFF",
   borderStyle: "black",
   backgroundColor: "#ffffff",
+  fontSize: "16px",
   list: [
-    {
-      pagePath: "pages/index/index",
-      text: "首页"
-    },
     {
       pagePath: "pages/room-list/room-list",
       text: "房间管理"
+    },
+    {
+      pagePath: "pages/index/index",
+      text: "统计信息"
     }
   ]
 };
@@ -8311,7 +8330,7 @@ class S {
 function T(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T('{"address":["127.0.0.1","192.168.2.23"],"servePort":7001,"debugPort":9000,"initialLaunchType":"local","skipFiles":["<node_internals>/**","/Applications/HBuilderX.app/Contents/HBuilderX/plugins/unicloud/**/*.js"]}'), O = T('[{"provider":"aliyun","spaceName":"pang-0217","spaceId":"mp-82beb92d-779d-44d1-a1d3-7fee8609024d","clientSecret":"950wKtihe/ZN9Q4B8lYudg==","endpoint":"https://api.next.bspapp.com"}]') || [];
+const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T('{"address":["127.0.0.1","192.168.3.11"],"servePort":7001,"debugPort":9000,"initialLaunchType":"local","skipFiles":["<node_internals>/**","/Applications/HBuilderX.app/Contents/HBuilderX/plugins/unicloud/**/*.js"]}'), O = T('[{"provider":"aliyun","spaceName":"pang-0217","spaceId":"mp-82beb92d-779d-44d1-a1d3-7fee8609024d","clientSecret":"950wKtihe/ZN9Q4B8lYudg==","endpoint":"https://api.next.bspapp.com"}]') || [];
 let N = "";
 try {
   N = "__UNI__EFF647A";

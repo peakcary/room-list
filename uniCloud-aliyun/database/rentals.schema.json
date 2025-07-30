@@ -1,0 +1,85 @@
+{
+  "bsonType": "object",
+  "description": "租赁关系表",
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": true
+  },
+  "properties": {
+    "_id": {
+      "description": "租赁ID"
+    },
+    "room_id": {
+      "bsonType": "string",
+      "description": "房间ID",
+      "required": true
+    },
+    "tenant_id": {
+      "bsonType": "string", 
+      "description": "租户ID",
+      "required": true
+    },
+    "rent_price": {
+      "bsonType": "double",
+      "description": "月租金",
+      "required": true
+    },
+    "deposit": {
+      "bsonType": "double",
+      "description": "押金金额",
+      "default": 0
+    },
+    "rent_start_date": {
+      "bsonType": "timestamp",
+      "description": "租期开始日期",
+      "required": true
+    },
+    "rent_end_date": {
+      "bsonType": "timestamp",
+      "description": "租期结束日期",
+      "required": true
+    },
+    "status": {
+      "bsonType": "string",
+      "enum": ["active", "expired", "terminated"],
+      "description": "租赁状态: active-进行中, expired-已到期, terminated-提前终止",
+      "default": "active"
+    },
+    "utilities_included": {
+      "bsonType": "bool",
+      "description": "是否包含水电费",
+      "default": false
+    },
+    "electricity_start_reading": {
+      "bsonType": "double",
+      "description": "入住时电表读数",
+      "default": 0
+    },
+    "water_start_reading": {
+      "bsonType": "double",
+      "description": "入住时水表读数",
+      "default": 0
+    },
+    "contract_notes": {
+      "bsonType": "string",
+      "description": "合同备注"
+    },
+    "create_date": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    },
+    "update_date": {
+      "bsonType": "timestamp",
+      "description": "更新时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "required": ["room_id", "tenant_id", "rent_price", "rent_start_date", "rent_end_date"]
+}

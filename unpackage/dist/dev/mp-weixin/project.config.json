@@ -6,8 +6,8 @@
   "setting": {
     "urlCheck": false,
     "es6": true,
-    "postcss": true,
-    "minified": true,
+    "postcss": false,
+    "minified": false,
     "newFeature": true,
     "bigPackageSizeSupport": true
   },
@@ -29,21 +29,8 @@
       "list": []
     },
     "miniprogram": {
-      "list": [
-        {
-          "id": 0,
-          "pathName": "pages/list/detail"
-        },
-        {
-          "id": 1,
-          "pathName": "pages/list/list"
-        },
-        {
-          "id": 2,
-          "pathName": "pages/ucenter/settings/settings"
-        }
-      ],
-      "current": 1
+      "current": -1,
+      "list": []
     }
   }
 }

@@ -1,10 +1,11 @@
 {
     "name" : "room-list",
     "appid" : "__UNI__EFF647A",
-    "description" : "云端一体应用快速开发基本项目模版",
+    "description" : "",
     "versionName" : "1.0.0",
     "versionCode" : "100",
     "transformPx" : false,
+    /* 5+App特有相关 */
     "app-plus" : {
         "usingComponents" : true,
         "nvueStyleCompiler" : "uni-app",
@@ -15,8 +16,11 @@
             "autoclose" : true,
             "delay" : 0
         },
+        /* 模块配置 */
         "modules" : {},
+        /* 应用发布信息 */
         "distribute" : {
+            /* android打包配置 */
             "android" : {
                 "permissions" : [
                     "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
@@ -36,27 +40,21 @@
                     "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>"
                 ]
             },
+            /* ios打包配置 */
             "ios" : {},
-            "sdkConfigs" : {
-                "push" : {
-                    "unipush" : null
-                }
-            }
+            /* SDK配置 */
+            "sdkConfigs" : {}
         }
     },
+    /* 快应用特有相关 */
     "quickapp" : {},
+    /* 小程序特有相关 */
     "mp-weixin" : {
         "appid" : "wxf9702eeacb1fdb80",
         "setting" : {
-            "urlCheck" : false,
-            "minified" : true,
-            "postcss" : true,
-            "es6" : true
+            "urlCheck" : false
         },
-        "usingComponents" : true,
-        "optimization" : {
-            "subPackages" : true
-        }
+        "usingComponents" : true
     },
     "mp-alipay" : {
         "usingComponents" : true
@@ -66,6 +64,14 @@
     },
     "mp-toutiao" : {
         "usingComponents" : true
+    },
+    "h5" : {
+        "devServer" : {
+            "port" : 8899,
+            "disableHostCheck" : true
+        },
+        "title" : "房间管理系统",
+        "template" : "index.html"
     },
     "uniStatistics" : {
         "enable" : false

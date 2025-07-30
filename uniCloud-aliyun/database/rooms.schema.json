@@ -1,0 +1,84 @@
+{
+  "bsonType": "object",
+  "description": "房间信息表",
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": true
+  },
+  "properties": {
+    "_id": {
+      "description": "房间ID"
+    },
+    "room_number": {
+      "bsonType": "string",
+      "description": "房间号",
+      "required": true
+    },
+    "floor": {
+      "bsonType": "int",
+      "description": "楼层"
+    },
+    "area": {
+      "bsonType": "double",
+      "description": "面积(平方米)"
+    },
+    "rent_price": {
+      "bsonType": "double",
+      "description": "租金(元/月)",
+      "required": true
+    },
+    "status": {
+      "bsonType": "string",
+      "enum": ["available", "rented", "maintenance"],
+      "description": "房间状态: available-可租, rented-已租, maintenance-维修中",
+      "default": "available"
+    },
+    "current_rental_id": {
+      "bsonType": "string",
+      "description": "当前租赁关系ID（房间被租时关联租赁表）"
+    },
+    "utilities": {
+      "bsonType": "object",
+      "description": "水电信息",
+      "properties": {
+        "electricity_reading": {
+          "bsonType": "double",
+          "description": "电表读数",
+          "default": 0
+        },
+        "water_reading": {
+          "bsonType": "double",
+          "description": "水表读数", 
+          "default": 0
+        },
+        "electricity_rate": {
+          "bsonType": "double",
+          "description": "电费单价(元/度)",
+          "default": 0.5
+        },
+        "water_rate": {
+          "bsonType": "double",
+          "description": "水费单价(元/吨)",
+          "default": 3.0
+        }
+      }
+    },
+    "create_date": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    },
+    "update_date": {
+      "bsonType": "timestamp", 
+      "description": "更新时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "required": ["room_number", "rent_price"]
+}

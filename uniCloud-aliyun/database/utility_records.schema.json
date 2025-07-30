@@ -1,0 +1,116 @@
+{
+  "bsonType": "object",
+  "description": "月度水电费记录表",
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": true
+  },
+  "properties": {
+    "_id": {
+      "description": "记录ID"
+    },
+    "rental_id": {
+      "bsonType": "string",
+      "description": "租赁关系ID",
+      "required": true
+    },
+    "room_id": {
+      "bsonType": "string",
+      "description": "房间ID",
+      "required": true
+    },
+    "tenant_id": {
+      "bsonType": "string",
+      "description": "租户ID",
+      "required": true
+    },
+    "billing_year": {
+      "bsonType": "int",
+      "description": "账单年份",
+      "required": true
+    },
+    "billing_month": {
+      "bsonType": "int",
+      "description": "账单月份(1-12)",
+      "required": true
+    },
+    "record_date": {
+      "bsonType": "timestamp",
+      "description": "抄表日期",
+      "required": true
+    },
+    "electricity_reading": {
+      "bsonType": "double",
+      "description": "电表读数",
+      "default": 0
+    },
+    "water_reading": {
+      "bsonType": "double", 
+      "description": "水表读数",
+      "default": 0
+    },
+    "electricity_usage": {
+      "bsonType": "double",
+      "description": "用电量(度)",
+      "default": 0
+    },
+    "water_usage": {
+      "bsonType": "double",
+      "description": "用水量(吨)",
+      "default": 0
+    },
+    "electricity_fee": {
+      "bsonType": "double",
+      "description": "电费金额",
+      "default": 0
+    },
+    "water_fee": {
+      "bsonType": "double",
+      "description": "水费金额", 
+      "default": 0
+    },
+    "total_fee": {
+      "bsonType": "double",
+      "description": "总费用",
+      "default": 0
+    },
+    "previous_electricity_reading": {
+      "bsonType": "double",
+      "description": "上月电表读数",
+      "default": 0
+    },
+    "previous_water_reading": {
+      "bsonType": "double",
+      "description": "上月水表读数",
+      "default": 0
+    },
+    "payment_status": {
+      "bsonType": "string",
+      "enum": ["unpaid", "paid", "overdue"],
+      "description": "缴费状态: unpaid-未缴费, paid-已缴费, overdue-逾期",
+      "default": "unpaid"
+    },
+    "payment_date": {
+      "bsonType": "timestamp",
+      "description": "缴费日期"
+    },
+    "due_date": {
+      "bsonType": "timestamp",
+      "description": "应缴费日期"
+    },
+    "notes": {
+      "bsonType": "string",
+      "description": "备注信息"
+    },
+    "create_date": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "required": ["rental_id", "room_id", "tenant_id", "billing_year", "billing_month", "record_date"]
+}

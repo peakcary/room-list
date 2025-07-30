@@ -1,0 +1,62 @@
+{
+  "bsonType": "object",
+  "description": "租户信息表",
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": true
+  },
+  "properties": {
+    "_id": {
+      "description": "租户ID"
+    },
+    "name": {
+      "bsonType": "string",
+      "description": "租户姓名",
+      "required": true
+    },
+    "id_card": {
+      "bsonType": "string",
+      "description": "身份证号",
+      "required": true
+    },
+    "phone": {
+      "bsonType": "string",
+      "description": "联系电话",
+      "required": true
+    },
+    "emergency_contact": {
+      "bsonType": "object",
+      "description": "紧急联系人",
+      "properties": {
+        "name": {
+          "bsonType": "string",
+          "description": "联系人姓名"
+        },
+        "phone": {
+          "bsonType": "string",
+          "description": "联系人电话"
+        },
+        "relationship": {
+          "bsonType": "string",
+          "description": "关系"
+        }
+      }
+    },
+    "status": {
+      "bsonType": "string",
+      "enum": ["active", "inactive"],
+      "description": "租户状态: active-活跃, inactive-非活跃",
+      "default": "active"
+    },
+    "create_date": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "required": ["name", "id_card", "phone"]
+}

@@ -1,0 +1,273 @@
+
+.container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+/* 头部区域 */
+.header-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 60rpx 40rpx 40rpx;
+  color: white;
+}
+.welcome-title {
+  font-size: 48rpx;
+  font-weight: bold;
+  margin-bottom: 30rpx;
+  text-align: center;
+}
+.time-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.time-tabs {
+  display: flex;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 25rpx;
+  padding: 6rpx;
+}
+.time-tab {
+  padding: 12rpx 24rpx;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  transition: all 0.3s;
+}
+.time-tab.active {
+  background: white;
+  color: #667eea;
+  font-weight: bold;
+}
+.time-picker {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 12rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+}
+.arrow {
+  margin-left: 8rpx;
+  font-size: 20rpx;
+}
+
+/* 收入统计 */
+.income-section {
+  margin: -20rpx 40rpx 30rpx;
+  background: white;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  box-shadow: 0 8rpx 25rpx rgba(0,0,0,0.1);
+}
+.income-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30rpx;
+}
+.overview-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border-radius: 16rpx;
+  background: #f8f9fa;
+}
+.overview-item.rent {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+.overview-item.utility {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+}
+.overview-item.maintenance {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%);
+}
+.overview-item.net {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+}
+.overview-icon {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+}
+.overview-amount {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4rpx;
+}
+.overview-amount.profit {
+  color: #4caf50;
+}
+.overview-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 房间出租情况 */
+.occupancy-section {
+  background: white;
+  margin: 0 40rpx 30rpx;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  box-shadow: 0 8rpx 25rpx rgba(0,0,0,0.1);
+}
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30rpx;
+}
+.occupancy-main {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+.occupancy-rate {
+  margin-right: 40rpx;
+}
+.rate-circle {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+.rate-text {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+.rate-label {
+  font-size: 20rpx;
+  margin-top: 4rpx;
+}
+.occupancy-details {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+}
+.detail-item {
+  text-align: center;
+}
+.detail-number {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+.detail-item.rented .detail-number {
+  color: #f44336;
+}
+.detail-item.available .detail-number {
+  color: #4caf50;
+}
+.detail-label {
+  font-size: 24rpx;
+  color: #666;
+}
+.rental-alerts {
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 20rpx;
+}
+.alert-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx;
+  margin-bottom: 12rpx;
+  border-radius: 12rpx;
+}
+.alert-item.warning {
+  background: #fff3cd;
+  border: 1rpx solid #ffeaa7;
+}
+.alert-item.danger {
+  background: #f8d7da;
+  border: 1rpx solid #f5c6cb;
+}
+.alert-icon {
+  margin-right: 12rpx;
+  font-size: 28rpx;
+}
+.alert-text {
+  font-size: 26rpx;
+  color: #333;
+}
+
+/* 收入趋势图 */
+.trend-section {
+  background: white;
+  margin: 0 40rpx 30rpx;
+  border-radius: 20rpx;
+  padding: 40rpx 30rpx;
+  box-shadow: 0 8rpx 25rpx rgba(0,0,0,0.1);
+}
+.trend-chart {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  height: 200rpx;
+  margin-bottom: 20rpx;
+}
+.trend-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+.trend-bar {
+  position: relative;
+  width: 40rpx;
+  height: 160rpx;
+  background: #f0f0f0;
+  border-radius: 20rpx;
+  margin-bottom: 12rpx;
+  overflow: hidden;
+}
+.trend-bar-fill {
+  position: absolute;
+  width: 100%;
+  border-radius: 20rpx;
+  transition: all 0.3s;
+}
+.trend-bar-fill.rent {
+  background: linear-gradient(to top, #667eea 0%, #764ba2 100%);
+}
+.trend-bar-fill.utility {
+  background: linear-gradient(to top, #f093fb 0%, #f5576c 100%);
+}
+.trend-label {
+  font-size: 22rpx;
+  color: #666;
+  margin-bottom: 4rpx;
+}
+.trend-amount {
+  font-size: 20rpx;
+  color: #333;
+  font-weight: bold;
+}
+.trend-legend {
+  display: flex;
+  justify-content: center;
+  gap: 40rpx;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #666;
+}
+.legend-color {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 4rpx;
+  margin-right: 8rpx;
+}
+.legend-color.rent {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.legend-color.utility {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+

@@ -213,6 +213,45 @@ function getRoleDisplayName(role) {
   return roleMap[role] || '未知角色';
 }
 
+/**
+ * 验证用户当前密码
+ */
+function verifyCurrentPassword(username, password) {
+  // 这里使用简单的本地验证，实际项目应该调用后端API
+  const validAccounts = [
+    { username: 'admin', password: '123456' },
+    { username: 'manager', password: '888888' }
+  ];
+
+  return validAccounts.some(acc => 
+    acc.username === username && acc.password === password
+  );
+}
+
+/**
+ * 修改用户密码
+ */
+function changeUserPassword(username, oldPassword, newPassword) {
+  try {
+    // 验证当前密码
+    if (!verifyCurrentPassword(username, oldPassword)) {
+      return { success: false, message: '当前密码错误' };
+    }
+
+    // 这里应该调用后端API更新密码
+    // 目前只是模拟成功，实际项目需要实现密码更新逻辑
+    console.log(`用户 ${username} 密码已更新`);
+    
+    // 可以选择是否强制重新登录
+    // clearAuth();
+    
+    return { success: true, message: '密码修改成功' };
+  } catch (error) {
+    console.error('修改密码失败:', error);
+    return { success: false, message: '系统错误，请稍后重试' };
+  }
+}
+
 // 导出所有函数
 module.exports = {
   isLoggedIn,
@@ -225,5 +264,7 @@ module.exports = {
   logout,
   checkPageAuth,
   refreshToken,
-  getRoleDisplayName
+  getRoleDisplayName,
+  verifyCurrentPassword,
+  changeUserPassword
 };

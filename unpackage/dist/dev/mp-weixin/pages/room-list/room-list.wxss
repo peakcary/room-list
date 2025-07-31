@@ -1,0 +1,289 @@
+
+.container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 用户信息栏 */
+.user-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 32rpx;
+  background: white;
+  border-bottom: 1rpx solid #eee;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+}
+.user-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-right: 8rpx;
+}
+.user-role {
+  font-size: 24rpx;
+  color: #666;
+}
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.change-password-btn {
+  font-size: 28rpx;
+  color: #1890ff;
+  padding: 8rpx 16rpx;
+  border: 1rpx solid #1890ff;
+  border-radius: 8rpx;
+  background: transparent;
+}
+.logout-btn {
+  font-size: 28rpx;
+  color: #ff4757;
+  padding: 8rpx 16rpx;
+  border: 1rpx solid #ff4757;
+  border-radius: 8rpx;
+  background: transparent;
+}
+
+/* Tab栏样式 */
+.tab-bar {
+  display: flex;
+  background-color: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24rpx 12rpx;
+  position: relative;
+  min-width: 0; /* 防止文字溢出 */
+}
+.tab-content {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+.tab-item.active {
+  color: #007AFF;
+}
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60rpx;
+  height: 4rpx;
+  background-color: #007AFF;
+  border-radius: 2rpx;
+}
+.tab-text {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+.tab-count {
+  font-size: 26rpx;
+  color: #999;
+  opacity: 0.8;
+}
+.tab-item.active .tab-count {
+  color: #007AFF;
+}
+
+
+/* 操作栏样式 */
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid #eee;
+}
+.search-box {
+  flex: 1;
+  margin-right: 20rpx;
+}
+.search-input {
+  width: 100%;
+  padding: 16rpx 20rpx;
+  background-color: #f8f9fa;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  border: none;
+}
+.add-btn {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  background-color: #007AFF;
+  color: white;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+}
+.add-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+.room-list {
+  flex: 1;
+  padding: 20rpx 0;
+}
+.room-list .room-item {
+  margin:10rpx 0;
+}
+.room-item {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.08);
+  border: 1rpx solid #f0f0f0;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+.room-item:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+}
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+.room-number {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+}
+.room-number::before {
+  content: '🏠';
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+.header-actions {
+  display: flex;
+  gap: 8rpx;
+  align-items: center;
+}
+.header-btn {
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  border: none;
+  color: white;
+  min-width: 60rpx;
+  text-align: center;
+}
+.header-btn.tenant {
+  background: linear-gradient(135deg, #722ed1 0%, #9254de 100%);
+}
+.header-btn.renewal {
+  background: linear-gradient(135deg, #13c2c2 0%, #36cfc9 100%);
+}
+.header-btn.terminate {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+}
+
+
+/* 租户信息卡片 */
+.tenant-info-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-top: 12rpx;
+  color: white;
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
+}
+.tenant-main-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+.tenant-name-phone {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+.tenant-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #fff;
+  margin-right: 16rpx;
+}
+.tenant-phone {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.tenant-status {
+  flex-shrink: 0;
+}
+.status-badge {
+  background-color: rgba(82, 196, 26, 0.2);
+  color: #52c41a;
+  padding: 6rpx 12rpx;
+  border-radius: 16rpx;
+  font-size: 22rpx;
+  font-weight: bold;
+  border: 1rpx solid rgba(82, 196, 26, 0.3);
+}
+.rental-period {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.period-text {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+  flex: 1;
+}
+.days-remaining {
+  display: flex;
+  justify-content: center;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  margin-top: 8rpx;
+}
+.days-remaining.normal {
+  background-color: rgba(82, 196, 26, 0.2);
+  border: 1rpx solid rgba(82, 196, 26, 0.3);
+}
+.days-remaining.warning {
+  background-color: rgba(250, 173, 20, 0.2);
+  border: 1rpx solid rgba(250, 173, 20, 0.3);
+}
+.days-remaining.urgent {
+  background-color: rgba(255, 77, 79, 0.2);
+  border: 1rpx solid rgba(255, 77, 79, 0.3);
+}
+.days-remaining.expired {
+  background-color: rgba(140, 140, 140, 0.2);
+  border: 1rpx solid rgba(140, 140, 140, 0.3);
+}
+.days-text {
+  font-size: 24rpx;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.95);
+}
+.load-more {
+  text-align: center;
+  padding: 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+

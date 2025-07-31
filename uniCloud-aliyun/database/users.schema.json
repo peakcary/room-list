@@ -1,0 +1,77 @@
+{
+  "bsonType": "object",
+  "description": "用户表",
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": true
+  },
+  "properties": {
+    "_id": {
+      "description": "用户ID"
+    },
+    "username": {
+      "bsonType": "string",
+      "description": "用户名（登录用）",
+      "required": true
+    },
+    "password": {
+      "bsonType": "string",
+      "description": "密码",
+      "required": true
+    },
+    "name": {
+      "bsonType": "string",
+      "description": "真实姓名",
+      "required": true
+    },
+    "role": {
+      "bsonType": "string",
+      "enum": ["admin", "manager", "user"],
+      "description": "用户角色: admin-管理员, manager-房管员, user-普通用户",
+      "default": "user"
+    },
+    "status": {
+      "bsonType": "string",
+      "enum": ["active", "inactive"],
+      "description": "用户状态: active-活跃, inactive-禁用",
+      "default": "active"
+    },
+    "phone": {
+      "bsonType": "string",
+      "description": "联系电话"
+    },
+    "email": {
+      "bsonType": "string",
+      "description": "邮箱地址"
+    },
+    "avatar": {
+      "bsonType": "string",
+      "description": "头像URL"
+    },
+    "last_login_time": {
+      "bsonType": "timestamp",
+      "description": "最后登录时间"
+    },
+    "password_update_date": {
+      "bsonType": "timestamp",
+      "description": "密码更新时间"
+    },
+    "create_date": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    },
+    "update_date": {
+      "bsonType": "timestamp",
+      "description": "更新时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "required": ["username", "password", "name"]
+}

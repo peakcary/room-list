@@ -15,6 +15,7 @@ exports.main = async (event, context) => {
     const rentalsCollection = db.collection('rentals');
     const utilityRecordsCollection = db.collection('utility_records');
     const maintenanceRecordsCollection = db.collection('maintenance_records');
+    const usersCollection = db.collection('users');
     
     // 如果是强制重置，先清空所有数据
     if (forceReset) {
@@ -23,7 +24,8 @@ exports.main = async (event, context) => {
         utilityRecordsCollection.where({}).remove(),
         rentalsCollection.where({}).remove(),
         roomsCollection.where({}).remove(),
-        tenantsCollection.where({}).remove()
+        tenantsCollection.where({}).remove(),
+        usersCollection.where({}).remove()
       ]);
       console.log('现有数据已清空');
     }
@@ -31,8 +33,41 @@ exports.main = async (event, context) => {
     // 检查集合是否存在，如果不存在则创建示例数据
     const roomsCount = await roomsCollection.count();
     const tenantsCount = await tenantsCollection.count();
+    const usersCount = await usersCollection.count();
     
     // 创建示例数据
+    // 首先创建用户数据
+    if (usersCount.total === 0) {
+      // 创建默认用户
+      const defaultUsers = [
+        {
+          username: 'admin',
+          password: '123456',
+          name: '系统管理员',
+          role: 'admin',
+          status: 'active',
+          phone: '13800000001',
+          create_date: new Date(),
+          update_date: new Date()
+        },
+        {
+          username: 'manager',
+          password: '888888',
+          name: '房管员',
+          role: 'manager',
+          status: 'active',
+          phone: '13800000002',
+          create_date: new Date(),
+          update_date: new Date()
+        }
+      ];
+      
+      for (let user of defaultUsers) {
+        await usersCollection.add(user);
+      }
+      console.log('默认用户数据创建完成');
+    }
+    
     if (tenantsCount.total === 0) {
       // 创建示例租户
       const sampleTenants = [

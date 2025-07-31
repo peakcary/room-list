@@ -7,6 +7,7 @@
         <text class="user-role">({{ userRoleText }})</text>
       </view>
       <view class="user-actions">
+        <text class="change-password-btn" @tap="changePassword">改密码</text>
         <text class="logout-btn" @tap="handleLogout">退出</text>
       </view>
     </view>
@@ -167,6 +168,13 @@ export default {
         this.userInfo = getCurrentUser() || {};
       }
       return isAuth;
+    },
+    
+    // 修改密码
+    changePassword() {
+      uni.navigateTo({
+        url: '/pages/change-password/change-password'
+      });
     },
     
     // 处理退出登录
@@ -526,6 +534,16 @@ export default {
 .user-actions {
   display: flex;
   align-items: center;
+  gap: 12rpx;
+}
+
+.change-password-btn {
+  font-size: 28rpx;
+  color: #1890ff;
+  padding: 8rpx 16rpx;
+  border: 1rpx solid #1890ff;
+  border-radius: 8rpx;
+  background: transparent;
 }
 
 .logout-btn {

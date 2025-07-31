@@ -47,12 +47,20 @@ export default {
   },
   
   onLoad(options) {
+    // 检查登录状态
+    this.checkAuth();
+    
     uni.setNavigationBarTitle({
       title: '添加房间'
     });
   },
   
   methods: {
+    // 检查认证状态
+    checkAuth() {
+      const { checkPageAuth } = require('../../utils/auth.js');
+      return checkPageAuth();
+    },
     
     // 表单验证
     validateForm() {

@@ -52,9 +52,25 @@
     "mp-weixin" : {
         "appid" : "wxf9702eeacb1fdb80",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "es6" : true,
+            "postcss" : true,
+            "minified" : true,
+            "checkSiteMap" : false
         },
-        "usingComponents" : true
+        "usingComponents" : true,
+        "permission": {
+            "scope.userLocation": {
+                "desc": "用于获取位置信息"
+            }
+        },
+        "requiredBackgroundModes": [],
+        "navigateToMiniProgramAppIdList": [],
+        "networkTimeout": {
+            "request": 60000,
+            "uploadFile": 60000,
+            "downloadFile": 60000
+        }
     },
     "mp-alipay" : {
         "usingComponents" : true

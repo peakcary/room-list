@@ -189,6 +189,9 @@ export default {
   },
   
   onLoad(options) {
+    // 检查登录状态
+    this.checkAuth();
+    
     if (options.id) {
       this.roomId = options.id;
       this.loadRoomInfo();
@@ -196,6 +199,12 @@ export default {
   },
   
   methods: {
+    // 检查认证状态
+    checkAuth() {
+      const { checkPageAuth } = require('../../utils/auth.js');
+      return checkPageAuth();
+    },
+    
     // 加载房间信息
     async loadRoomInfo() {
       this.loading = true;
@@ -373,10 +382,24 @@ export default {
     
     
     // 拨打电话
-    callTenant() {
-      if (this.roomInfo.tenant_info?.phone) {
+    callTenant(phoneNumber) {
+      // 如果传入了电话号码参数就用参数，否则使用当前租户信息
+      const phone = phoneNumber || this.roomInfo.tenant_info?.phone;
+      if (phone) {
         uni.makePhoneCall({
-          phoneNumber: this.roomInfo.tenant_info.phone
+          phoneNumber: phone,
+          fail: (err) => {
+            console.error('拨打电话失败:', err);
+            uni.showToast({
+              title: '拨打失败',
+              icon: 'none'
+            });
+          }
+        });
+      } else {
+        uni.showToast({
+          title: '电话号码不存在',
+          icon: 'none'
         });
       }
     },

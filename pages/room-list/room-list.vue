@@ -1,5 +1,15 @@
 <template>
   <view class="container">
+    <!-- 用户信息栏 -->
+    <view class="user-bar">
+      <view class="user-info">
+        <text class="user-name">{{ userInfo.name || userInfo.username }}</text>
+        <text class="user-role">({{ userRoleText }})</text>
+      </view>
+      <view class="user-actions">
+        <text class="logout-btn" @tap="handleLogout">退出</text>
+      </view>
+    </view>
     <!-- Tab栏 -->
     <view class="tab-bar">
       <view 
@@ -73,7 +83,7 @@
           <view class="tenant-main-info">
             <view class="tenant-name-phone">
               <text class="tenant-name">{{ room.current_tenant.name }}</text>
-              <text class="tenant-phone" @tap="callTenant(room.current_tenant.phone)">
+              <text class="tenant-phone" @tap.stop="callTenant(room.current_tenant.phone)">
                 📞 {{ room.current_tenant.phone }}
               </text>
             </view>
@@ -115,11 +125,26 @@ export default {
         total: 0,
         rented: 0,
         available: 0
-      }
+      },
+      userInfo: {}
+    }
+  },
+  
+  computed: {
+    userRoleText() {
+      // 角色显示名称映射
+      const roleMap = {
+        'admin': '管理员',
+        'manager': '房管员',
+        'user': '普通用户'
+      };
+      return roleMap[this.userInfo.role] || '未知角色';
     }
   },
   
   onLoad() {
+    // 检查登录状态
+    this.checkAuth();
     this.loadRooms();
     this.loadStatistics();
   },
@@ -134,6 +159,29 @@ export default {
   },
   
   methods: {
+    // 检查认证状态
+    checkAuth() {
+      const { checkPageAuth, getCurrentUser } = require('../../utils/auth.js');
+      const isAuth = checkPageAuth();
+      if (isAuth) {
+        this.userInfo = getCurrentUser() || {};
+      }
+      return isAuth;
+    },
+    
+    // 处理退出登录
+    handleLogout() {
+      uni.showModal({
+        title: '确认退出',
+        content: '确定要退出登录吗？',
+        success: (res) => {
+          if (res.confirm) {
+            const { logout } = require('../../utils/auth.js');
+            logout();
+          }
+        }
+      });
+    },
     // 加载房间列表
     async loadRooms(isRefresh = false) {
       if (this.loading) return;
@@ -446,6 +494,47 @@ export default {
   /* #ifdef H5 */
   padding-bottom: 70px;
   /* #endif */
+}
+
+/* 用户信息栏 */
+.user-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 32rpx;
+  background: white;
+  border-bottom: 1rpx solid #eee;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-right: 8rpx;
+}
+
+.user-role {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.user-actions {
+  display: flex;
+  align-items: center;
+}
+
+.logout-btn {
+  font-size: 28rpx;
+  color: #ff4757;
+  padding: 8rpx 16rpx;
+  border: 1rpx solid #ff4757;
+  border-radius: 8rpx;
+  background: transparent;
 }
 
 /* Tab栏样式 */

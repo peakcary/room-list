@@ -26,12 +26,42 @@ export default {
   
   onLaunch: function() {
     console.log('App Launch')
+    // 初始化应用时检查登录状态
+    this.checkInitialAuth()
   },
   onShow: function() {
     console.log('App Show')
   },
   onHide: function() {
     console.log('App Hide')  
+  },
+  
+  methods: {
+    // 检查应用启动时的认证状态
+    checkInitialAuth() {
+      try {
+        const { isLoggedIn } = require('./utils/auth.js')
+        
+        // 获取当前页面
+        const pages = getCurrentPages()
+        const currentPage = pages.length > 0 ? pages[pages.length - 1] : null
+        const currentRoute = currentPage ? `/${currentPage.route}` : ''
+        
+        console.log('App启动检查认证状态, 当前路由:', currentRoute)
+        
+        // 如果当前不在登录页面且未登录，则跳转到登录页面
+        if (currentRoute !== '/pages/login/login' && !isLoggedIn()) {
+          console.log('未登录，跳转到登录页面')
+          setTimeout(() => {
+            uni.reLaunch({
+              url: '/pages/login/login'
+            })
+          }, 100)
+        }
+      } catch (error) {
+        console.error('检查认证状态失败:', error)
+      }
+    }
   }
 }
 </script>

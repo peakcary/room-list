@@ -51,6 +51,11 @@
       </view>
       
       <view class="test-item">
+        <button class="test-btn debug-btn" @click="testCloudConnection">🌐 测试云函数连接</button>
+        <text class="test-result">{{ connectionResult }}</text>
+      </view>
+      
+      <view class="test-item">
         <button class="test-btn deploy-btn" @click="goToSystemDeploy">🚀 系统部署管理</button>
         <text class="test-result">一键部署和管理系统</text>
       </view>
@@ -94,7 +99,8 @@ export default {
       debugResult: '',
       fixResult: '',
       resetResult: '',
-      debugInfo: '等待测试...'
+      debugInfo: '等待测试...',
+      connectionResult: ''
     }
   },
   
@@ -481,6 +487,50 @@ export default {
       uni.navigateTo({
         url: '/pages/system-deploy/system-deploy'
       });
+    },
+    
+    // 测试云函数连接
+    async testCloudConnection() {
+      this.connectionResult = '测试中...';
+      console.log('开始测试云函数连接');
+      
+      try {
+        // 检查 uniCloud 是否已初始化
+        if (typeof uniCloud === 'undefined') {
+          this.connectionResult = '❌ uniCloud 未定义';
+          return;
+        }
+        
+        console.log('uniCloud 对象存在，开始调用云函数');
+        
+        // 测试最简单的云函数调用
+        const result = await uniCloud.callFunction({
+          name: 'room-management',
+          data: {
+            action: 'getRooms',
+            data: { pageSize: 1, pageNum: 1 }
+          }
+        });
+        
+        console.log('云函数调用结果:', result);
+        
+        if (result.result && result.result.code === 0) {
+          this.connectionResult = `✅ 连接成功！返回数据: ${JSON.stringify(result.result.data).substring(0, 100)}...`;
+        } else {
+          this.connectionResult = `⚠️ 云函数返回错误: ${result.result ? result.result.message : '未知错误'}`;
+        }
+        
+      } catch (error) {
+        console.error('云函数连接测试失败:', error);
+        
+        if (error.message && error.message.includes('request:fail')) {
+          this.connectionResult = `❌ 网络请求失败: ${error.message}`;
+        } else if (error.message && error.message.includes('not found')) {
+          this.connectionResult = '❌ 云函数不存在或未部署';
+        } else {
+          this.connectionResult = `❌ 连接失败: ${error.message}`;
+        }
+      }
     }
   }
 }

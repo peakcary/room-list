@@ -135,12 +135,6 @@
       </view>
     </view>
 
-    <!-- 系统管理入口 -->
-    <view class="system-management">
-      <button class="system-btn" @click="goToSystemDeploy">
-        🚀 系统部署管理
-      </button>
-    </view>
 
   </view>
 </template>
@@ -171,7 +165,12 @@ export default {
         overdue: 0
       },
       incomeTrend: [],
-      loading: false
+      loading: false,
+      // 可选的时间范围
+      availableTimeRange: {
+        years: [],
+        months: []
+      }
     }
   },
   
@@ -186,6 +185,9 @@ export default {
   },
   
   onLoad() {
+    // 检查登录状态
+    this.checkAuth();
+    this.loadAvailableTimeRange();
     this.loadDashboardData();
   },
   
@@ -195,6 +197,11 @@ export default {
   },
   
   methods: {
+    // 检查认证状态
+    checkAuth() {
+      const { checkPageAuth } = require('../../utils/auth.js');
+      return checkPageAuth();
+    },
     // 加载首页数据
     async loadDashboardData() {
       if (this.loading) return;
@@ -219,6 +226,150 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    
+    // 加载可用时间范围
+    async loadAvailableTimeRange() {
+      try {
+        // 同时获取租赁数据和水电记录数据来确定时间范围
+        const [rentalsResult, utilityResult] = await Promise.all([
+          uniCloud.callFunction({
+            name: 'room-management',
+            data: { action: 'getRentals' }
+          }),
+          uniCloud.callFunction({
+            name: 'room-management',
+            data: { action: 'getUtilityRecords' }
+          })
+        ]);
+        
+        const rentals = rentalsResult.result.code === 0 ? rentalsResult.result.data.list : [];
+        const utilityRecords = utilityResult.result.code === 0 ? utilityResult.result.data.list : [];
+        
+        this.calculateAvailableTimeRange(rentals, utilityRecords);
+      } catch (error) {
+        console.error('加载时间范围失败:', error);
+        // 失败时使用默认范围
+        this.setDefaultTimeRange();
+      }
+    },
+    
+    // 根据租赁数据和水电记录计算可用时间范围
+    calculateAvailableTimeRange(rentals, utilityRecords) {
+      const dates = [];
+      const currentDate = new Date();
+      
+      // 添加当前月份
+      dates.push(currentDate);
+      
+      // 从租赁数据中提取日期
+      rentals.forEach(rental => {
+        if (rental.start_date) {
+          dates.push(new Date(rental.start_date));
+        }
+        if (rental.end_date) {
+          dates.push(new Date(rental.end_date));
+        }
+        if (rental.create_date) {
+          dates.push(new Date(rental.create_date));  
+        }
+      });
+      
+      // 从水电记录中提取日期
+      utilityRecords.forEach(record => {
+        if (record.record_date) {
+          dates.push(new Date(record.record_date));
+        }
+        if (record.create_date) {
+          dates.push(new Date(record.create_date));
+        }
+      });
+      
+      // 去重并排序
+      const uniqueDates = [...new Set(dates.map(date => date.getTime()))]
+        .map(time => new Date(time))
+        .sort((a, b) => a - b);
+      
+      if (uniqueDates.length === 0) {
+        this.setDefaultTimeRange();
+        return;
+      }
+      
+      const minDate = uniqueDates[0];
+      const maxDate = uniqueDates[uniqueDates.length - 1];
+      
+      // 生成年份范围（从最早年份到当前年份）
+      const minYear = minDate.getFullYear();
+      const maxYear = Math.max(currentDate.getFullYear(), maxDate.getFullYear());
+      
+      this.availableTimeRange.years = [];
+      for (let year = minYear; year <= maxYear; year++) {
+        this.availableTimeRange.years.push(year);
+      }
+      
+      // 确保当前年份和月份在可用范围内
+      if (!this.availableTimeRange.years.includes(this.currentYear)) {
+        this.currentYear = this.availableTimeRange.years[this.availableTimeRange.years.length - 1];
+      }
+      
+      // 生成当前年份的月份范围
+      this.updateAvailableMonths();
+      
+      // 确保当前月份在可用范围内
+      if (!this.availableTimeRange.months.includes(this.currentMonth)) {
+        this.currentMonth = this.availableTimeRange.months[this.availableTimeRange.months.length - 1] || 1;
+      }
+      
+      console.log('计算的时间范围:', {
+        years: this.availableTimeRange.years,
+        months: this.availableTimeRange.months,
+        currentYear: this.currentYear,
+        currentMonth: this.currentMonth
+      });
+    },
+    
+    // 更新可用月份（基于当前选中的年份和实际数据）
+    updateAvailableMonths() {
+      const currentDate = new Date();
+      const selectedYear = this.currentYear;
+      
+      this.availableTimeRange.months = [];
+      
+      // 如果是当前年份，显示到当前月份
+      if (selectedYear === currentDate.getFullYear()) {
+        for (let month = 1; month <= currentDate.getMonth() + 1; month++) {
+          this.availableTimeRange.months.push(month);
+        }
+      } else if (selectedYear < currentDate.getFullYear()) {
+        // 历史年份，显示所有月份
+        for (let month = 1; month <= 12; month++) {
+          this.availableTimeRange.months.push(month);
+        }
+      } else {
+        // 未来年份，暂时显示所有月份（实际使用中可能需要根据预期数据调整）
+        for (let month = 1; month <= 12; month++) {
+          this.availableTimeRange.months.push(month);
+        }
+      }
+      
+      // 确保至少有一个月份可选
+      if (this.availableTimeRange.months.length === 0) {
+        this.availableTimeRange.months.push(currentDate.getMonth() + 1);
+      }
+    },
+    
+    // 设置默认时间范围
+    setDefaultTimeRange() {
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      
+      // 默认显示最近3年
+      this.availableTimeRange.years = [];
+      for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+        this.availableTimeRange.years.push(year);
+      }
+      
+      this.updateAvailableMonths();
     },
     
     // 加载收入统计
@@ -296,31 +447,48 @@ export default {
     // 显示时间选择器
     showTimePicker() {
       if (this.currentTimeType === 'monthly') {
-        // 月份选择器
-        const months = [];
-        for (let i = 1; i <= 12; i++) {
-          months.push(`${i}月`);
+        // 月份选择器 - 基于可用月份
+        if (this.availableTimeRange.months.length === 0) {
+          uni.showToast({
+            title: '暂无可用月份数据',
+            icon: 'none'
+          });
+          return;
         }
+        
+        const months = this.availableTimeRange.months.map(month => `${month}月`);
+        const currentIndex = this.availableTimeRange.months.indexOf(this.currentMonth);
         
         uni.showActionSheet({
           itemList: months,
           success: (res) => {
-            this.currentMonth = res.tapIndex + 1;
+            this.currentMonth = this.availableTimeRange.months[res.tapIndex];
             this.loadIncomeStats();
           }
         });
       } else {
-        // 年份选择器
-        const currentYear = new Date().getFullYear();
-        const years = [];
-        for (let i = currentYear - 2; i <= currentYear + 1; i++) {
-          years.push(`${i}年`);
+        // 年份选择器 - 基于可用年份
+        if (this.availableTimeRange.years.length === 0) {
+          uni.showToast({
+            title: '暂无可用年份数据',
+            icon: 'none'
+          });
+          return;
         }
+        
+        const years = this.availableTimeRange.years.map(year => `${year}年`);
+        const currentIndex = this.availableTimeRange.years.indexOf(this.currentYear);
         
         uni.showActionSheet({
           itemList: years,
           success: (res) => {
-            this.currentYear = currentYear - 2 + res.tapIndex;
+            this.currentYear = this.availableTimeRange.years[res.tapIndex];
+            // 年份改变时，更新可用月份
+            this.updateAvailableMonths();
+            // 如果当前月份不在新的可用月份中，设置为第一个可用月份
+            if (!this.availableTimeRange.months.includes(this.currentMonth)) {
+              this.currentMonth = this.availableTimeRange.months[0] || 1;
+            }
             this.loadIncomeStats();
           }
         });
@@ -344,12 +512,6 @@ export default {
       return `${month}月`;
     },
     
-    // 跳转到系统部署管理
-    goToSystemDeploy() {
-      uni.navigateTo({
-        url: '/pages/system-deploy/system-deploy'
-      });
-    }
     
   }
 }
@@ -677,29 +839,6 @@ export default {
 
 .legend-color.utility {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-/* 系统管理入口 */
-.system-management {
-  padding: 40rpx;
-  text-align: center;
-}
-
-.system-btn {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-  color: white;
-  border: none;
-  border-radius: 16rpx;
-  padding: 24rpx 48rpx;
-  font-size: 28rpx;
-  font-weight: bold;
-  box-shadow: 0 8rpx 25rpx rgba(255, 107, 107, 0.3);
-  transition: all 0.3s;
-}
-
-.system-btn:active {
-  transform: scale(0.95);
-  box-shadow: 0 4rpx 12rpx rgba(255, 107, 107, 0.4);
 }
 
 </style>

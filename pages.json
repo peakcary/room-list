@@ -1,9 +1,11 @@
 {
 	"pages": [
 		{
-			"path": "pages/index/index",
+			"path": "pages/login/login",
 			"style": {
-				"navigationBarTitleText": "统计信息"
+				"navigationBarTitleText": "登录",
+				"navigationBarBackgroundColor": "#667eea",
+				"navigationBarTextStyle": "white"
 			}
 		},
 		{
@@ -11,6 +13,12 @@
 			"style": {
 				"navigationBarTitleText": "房间管理",
 				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "统计信息"
 			}
 		},
 		{

@@ -165,6 +165,9 @@ export default {
   },
   
   onLoad(options) {
+    // 检查登录状态
+    this.checkAuth();
+    
     if (options.roomId) {
       this.roomId = options.roomId;
       this.loadRoomInfo();
@@ -174,6 +177,11 @@ export default {
   },
   
   methods: {
+    // 检查认证状态
+    checkAuth() {
+      const { checkPageAuth } = require('../../utils/auth.js');
+      return checkPageAuth();
+    },
     // 加载房间信息
     async loadRoomInfo() {
       try {

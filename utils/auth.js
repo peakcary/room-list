@@ -214,16 +214,53 @@ function getRoleDisplayName(role) {
 }
 
 /**
+ * 获取本地存储的用户账户信息
+ */
+function getStoredAccounts() {
+  try {
+    const accounts = uni.getStorageSync('userAccounts');
+    if (accounts) {
+      return JSON.parse(accounts);
+    }
+  } catch (error) {
+    console.error('获取存储账户失败:', error);
+  }
+  
+  // 返回默认账户
+  const defaultAccounts = [
+    { username: 'admin', password: '123456', name: '系统管理员', role: 'admin' },
+    { username: 'manager', password: '888888', name: '房管员', role: 'manager' }
+  ];
+  
+  // 初始化存储
+  try {
+    uni.setStorageSync('userAccounts', JSON.stringify(defaultAccounts));
+  } catch (error) {
+    console.error('初始化账户存储失败:', error);
+  }
+  
+  return defaultAccounts;
+}
+
+/**
+ * 保存用户账户信息到本地存储
+ */
+function saveStoredAccounts(accounts) {
+  try {
+    uni.setStorageSync('userAccounts', JSON.stringify(accounts));
+    return true;
+  } catch (error) {
+    console.error('保存账户信息失败:', error);
+    return false;
+  }
+}
+
+/**
  * 验证用户当前密码
  */
 function verifyCurrentPassword(username, password) {
-  // 这里使用简单的本地验证，实际项目应该调用后端API
-  const validAccounts = [
-    { username: 'admin', password: '123456' },
-    { username: 'manager', password: '888888' }
-  ];
-
-  return validAccounts.some(acc => 
+  const accounts = getStoredAccounts();
+  return accounts.some(acc => 
     acc.username === username && acc.password === password
   );
 }
@@ -238,12 +275,35 @@ function changeUserPassword(username, oldPassword, newPassword) {
       return { success: false, message: '当前密码错误' };
     }
 
-    // 这里应该调用后端API更新密码
-    // 目前只是模拟成功，实际项目需要实现密码更新逻辑
-    console.log(`用户 ${username} 密码已更新`);
+    // 获取所有账户信息
+    const accounts = getStoredAccounts();
     
-    // 可以选择是否强制重新登录
-    // clearAuth();
+    // 查找并更新对应用户的密码
+    const userIndex = accounts.findIndex(acc => acc.username === username);
+    if (userIndex === -1) {
+      return { success: false, message: '用户不存在' };
+    }
+    
+    // 更新密码
+    accounts[userIndex].password = newPassword;
+    
+    // 保存更新后的账户信息
+    if (!saveStoredAccounts(accounts)) {
+      return { success: false, message: '保存密码失败，请重试' };
+    }
+    
+    // 更新当前登录用户的信息（如果是当前用户修改密码）
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.username === username) {
+      currentUser.password = newPassword;
+      try {
+        uni.setStorageSync('userInfo', currentUser);
+      } catch (error) {
+        console.error('更新当前用户信息失败:', error);
+      }
+    }
+    
+    console.log(`用户 ${username} 密码已成功更新`);
     
     return { success: true, message: '密码修改成功' };
   } catch (error) {
@@ -252,8 +312,8 @@ function changeUserPassword(username, oldPassword, newPassword) {
   }
 }
 
-// 导出所有函数
-module.exports = {
+// 导出所有函数 (ES6 export)
+export {
   isLoggedIn,
   getCurrentUser,
   getUserRole,

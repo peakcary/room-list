@@ -172,6 +172,8 @@
 </template>
 
 <script>
+import { checkPageAuth } from '../../utils/auth.js';
+
 export default {
   data() {
     return {
@@ -201,7 +203,6 @@ export default {
   methods: {
     // 检查认证状态
     checkAuth() {
-      const { checkPageAuth } = require('../../utils/auth.js');
       return checkPageAuth();
     },
     

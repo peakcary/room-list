@@ -85,6 +85,8 @@
 </template>
 
 <script>
+import { checkPageAuth, getCurrentUser, changeUserPassword } from '../../utils/auth.js';
+
 export default {
   data() {
     return {
@@ -106,7 +108,6 @@ export default {
   methods: {
     // 检查认证状态
     checkAuth() {
-      const { checkPageAuth } = require('../../utils/auth.js');
       return checkPageAuth();
     },
 
@@ -190,8 +191,7 @@ export default {
     // 修改密码逻辑
     async changePassword(currentPassword, newPassword) {
       try {
-        // 获取当前用户信息和密码修改方法
-        const { getCurrentUser, changeUserPassword } = require('../../utils/auth.js');
+        // 获取当前用户信息
         const currentUser = getCurrentUser();
         
         if (!currentUser) {

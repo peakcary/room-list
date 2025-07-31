@@ -141,12 +141,21 @@ export default {
 
     // 验证登录
     async validateLogin(username, password) {
-      // 这里可以接入真实的认证系统
-      // 目前使用简单的本地验证
-      const validAccounts = [
-        { username: 'admin', password: '123456', name: '管理员', role: 'admin' },
-        { username: 'manager', password: '888888', name: '房管员', role: 'manager' }
-      ];
+      // 使用auth.js中的账户存储系统进行验证
+      try {
+        const accounts = uni.getStorageSync('userAccounts');
+        let validAccounts = [];
+        
+        if (accounts) {
+          validAccounts = JSON.parse(accounts);
+        } else {
+          // 如果没有存储账户，使用默认账户并初始化存储
+          validAccounts = [
+            { username: 'admin', password: '123456', name: '系统管理员', role: 'admin' },
+            { username: 'manager', password: '888888', name: '房管员', role: 'manager' }
+          ];
+          uni.setStorageSync('userAccounts', JSON.stringify(validAccounts));
+        }
 
       const account = validAccounts.find(acc => 
         acc.username === username && acc.password === password

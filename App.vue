@@ -16,6 +16,7 @@
 // #ifdef H5
 import CustomTabbar from '@/components/custom-tabbar/custom-tabbar.vue'
 // #endif
+import { isLoggedIn } from './utils/auth.js';
 
 export default {
   // #ifdef H5
@@ -40,8 +41,6 @@ export default {
     // 检查应用启动时的认证状态
     checkInitialAuth() {
       try {
-        const { isLoggedIn } = require('./utils/auth.js')
-        
         // 获取当前页面
         const pages = getCurrentPages()
         const currentPage = pages.length > 0 ? pages[pages.length - 1] : null

@@ -1,5 +1,17 @@
 <template>
   <view class="container">
+    <!-- 用户信息栏 -->
+    <view class="user-bar">
+      <view class="user-info">
+        <text class="user-name">{{ userInfo.name || userInfo.username }}</text>
+        <text class="user-role">({{ userRoleText }})</text>
+      </view>
+      <view class="user-actions">
+        <text class="change-password-btn" @tap="changePassword">改密码</text>
+        <text class="logout-btn" @tap="handleLogout">退出</text>
+      </view>
+    </view>
+    
     <!-- 头部时间选择 -->
     <view class="header-section">
       <view class="welcome-title">收入统计</view>
@@ -140,6 +152,8 @@
 </template>
 
 <script>
+import { checkPageAuth, getCurrentUser, logout } from '../../utils/auth.js';
+
 export default {
   data() {
     return {
@@ -170,7 +184,8 @@ export default {
       availableTimeRange: {
         years: [],
         months: []
-      }
+      },
+      userInfo: {}
     }
   },
   
@@ -181,6 +196,16 @@ export default {
       } else {
         return `${this.currentYear}年`;
       }
+    },
+    
+    userRoleText() {
+      // 角色显示名称映射
+      const roleMap = {
+        'admin': '管理员',
+        'manager': '房管员',
+        'user': '普通用户'
+      };
+      return roleMap[this.userInfo.role] || '未知角色';
     }
   },
   
@@ -192,15 +217,39 @@ export default {
   },
   
   onShow() {
-    // 页面显示时刷新数据
+    // 页面显示时刷新数据和用户信息
+    this.checkAuth();
     this.loadDashboardData();
   },
   
   methods: {
     // 检查认证状态
     checkAuth() {
-      const { checkPageAuth } = require('../../utils/auth.js');
-      return checkPageAuth();
+      const isAuth = checkPageAuth();
+      if (isAuth) {
+        this.userInfo = getCurrentUser() || {};
+      }
+      return isAuth;
+    },
+    
+    // 修改密码
+    changePassword() {
+      uni.navigateTo({
+        url: '/pages/change-password/change-password'
+      });
+    },
+    
+    // 处理退出登录
+    handleLogout() {
+      uni.showModal({
+        title: '确认退出',
+        content: '确定要退出登录吗？',
+        success: (res) => {
+          if (res.confirm) {
+            logout();
+          }
+        }
+      });
     },
     // 加载首页数据
     async loadDashboardData() {
@@ -525,6 +574,62 @@ export default {
   /* #ifdef H5 */
   padding-bottom: 70px;
   /* #endif */
+}
+
+/* 用户信息栏 */
+.user-bar {
+  background: white;
+  padding: 30rpx 40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1rpx solid #e5e5e5;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.user-role {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.user-actions {
+  display: flex;
+  gap: 24rpx;
+}
+
+.change-password-btn {
+  font-size: 28rpx;
+  color: #1890ff;
+  padding: 12rpx 20rpx;
+  background: #f0f7ff;
+  border-radius: 20rpx;
+}
+
+.change-password-btn:active {
+  background: #e1f0ff;
+}
+
+.logout-btn {
+  font-size: 28rpx;
+  color: #ff4757;
+  padding: 12rpx 20rpx;
+  background: #ffeaea;
+  border-radius: 20rpx;
+}
+
+.logout-btn:active {
+  background: #ffdddd;
 }
 
 /* 头部区域 */

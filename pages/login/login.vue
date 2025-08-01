@@ -157,24 +157,31 @@ export default {
           uni.setStorageSync('userAccounts', JSON.stringify(validAccounts));
         }
 
-      const account = validAccounts.find(acc => 
-        acc.username === username && acc.password === password
-      );
+        const account = validAccounts.find(acc => 
+          acc.username === username && acc.password === password
+        );
 
-      if (account) {
-        return {
-          success: true,
-          userInfo: {
-            username: account.username,
-            name: account.name,
-            role: account.role,
-            loginTime: new Date().toISOString()
-          }
-        };
-      } else {
+        if (account) {
+          return {
+            success: true,
+            userInfo: {
+              username: account.username,
+              name: account.name,
+              role: account.role,
+              loginTime: new Date().toISOString()
+            }
+          };
+        } else {
+          return {
+            success: false,
+            message: '用户名或密码错误'
+          };
+        }
+      } catch (error) {
+        console.error('登录验证过程中出错:', error);
         return {
           success: false,
-          message: '用户名或密码错误'
+          message: '登录验证失败，请重试'
         };
       }
     },

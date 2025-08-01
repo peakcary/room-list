@@ -53,11 +53,6 @@
           <text v-if="!isLoading">登录</text>
           <text v-else>登录中...</text>
         </button>
-
-        <!-- 提示信息 -->
-        <view class="login-tips">
-          <text class="tips-text">默认账号: admin / 123456</text>
-        </view>
       </view>
     </view>
 
@@ -356,19 +351,6 @@ export default {
 
 .login-btn[disabled] {
   opacity: 0.6;
-}
-
-.login-tips {
-  text-align: center;
-  padding: 20rpx;
-  background: #f0f7ff;
-  border-radius: 8rpx;
-  border: 1rpx solid #e1f0ff;
-}
-
-.tips-text {
-  font-size: 24rpx;
-  color: #1890ff;
 }
 
 .copyright {
